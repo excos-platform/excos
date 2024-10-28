@@ -33,3 +33,5 @@ jobs:
         git commit -m "Package update"
         git push -u origin "package-update/run$GITHUB_RUN_NUMBER"
         gh pr create -B main -H "package-update/run$GITHUB_RUN_NUMBER" --title ".NET Package Update ($(date %D))" --body "$(cat upgrade.md)\n\nCreated by Github action"
+      env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
