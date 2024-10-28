@@ -1,0 +1,5 @@
+<Project>
+	<PropertyGroup>
+		<NoWarn>$(NoWarn);ASPIRE001</NoWarn>
+	</PropertyGroup>
+</Project>
