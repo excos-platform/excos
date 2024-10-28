@@ -18,9 +18,16 @@ jobs:
     - uses: actions/checkout@v4
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
+    - name: Install .NET Aspire workload
+      run: dotnet workload install aspire
     - name: Restore dependencies
       run: dotnet restore
     - name: Build
       run: dotnet build --no-restore
     - name: Test
-      run: dotnet test --no-build --verbosity normal
+      run: dotnet test --no-build --verbosity normal -logger:"junit;LogFilePath=dotnet-test-result.xml"
+    - name: Test Summary
+      uses: test-summary/action@v2
+      with:
+        paths: "**/dotnet-test-result.xml"
+      if: success() || failure()
