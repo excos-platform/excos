@@ -26,7 +26,12 @@ jobs:
     - name: Run dotnet-outdated
       run: dotnet outdated --upgrade -o upgrade.md -of Markdown
     - name: Output to summary
-      run: cat upgrade.md >> $GITHUB_STEP_SUMMARY
+      run: |
+        if test -f upgrade.md; then
+          cat upgrade.md >> $GITHUB_STEP_SUMMARY
+        else
+          echo "# All packages are up to date" >> $GITHUB_STEP_SUMMARY
+        fi
     - name: Add updated files to Git
       run: |
         git diff -s --exit-code && exit 0
