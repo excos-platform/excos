@@ -1,6 +1,8 @@
 name: .NET Package Update
 
 on:
+  pull_request:
+    branches: [ "main" ]
   schedule:
     - cron: '30 7 * * 1'
   workflow_dispatch: # allow running by manual trigger
