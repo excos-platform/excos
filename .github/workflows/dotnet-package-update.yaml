@@ -1,0 +1,35 @@
+name: .NET Package Update
+
+on:
+  schedule:
+    - cron: '30 7 * * 1'
+
+jobs:
+  check-for-updates:
+    name: Check for Updates
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0 # full checkout
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+    - name: Install .NET Aspire workload
+      run: dotnet workload install aspire
+    - name: Install dotnet-outdated
+      run: dotnet tool install --global dotnet-outdated-tool
+    - name: Run dotnet-outdates
+      run: dotnet outdated --upgrade -o upgrade.md -of Markdown
+    - name: Output to summary
+      run: cat upgrade.md >> $GITHUB_STEP_SUMMARY
+    - name: Add updated files to Git
+      run: |
+        git diff -s --exit-code && exit 0
+        git checkout -b "package-update/run$GITHUB_RUN_NUMBER"
+        git add -u
+        git commit -m "Package update"
+        git push -u origin "package-update/run$GITHUB_RUN_NUMBER"
+        gh pr create -B main -H "package-update/run$GITHUB_RUN_NUMBER" --title ".NET Package Update ($(date %D))" --body "$(cat upgrade.md)\n\nCreated by Github action"
