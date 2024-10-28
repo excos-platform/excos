@@ -1,8 +1,6 @@
 name: .NET Package Update
 
 on:
-  pull_request:
-    branches: [ "main" ]
   schedule:
     - cron: '30 7 * * 1'
 
@@ -12,6 +10,7 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
+    runs-on: ubuntu-latest
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
