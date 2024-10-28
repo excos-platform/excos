@@ -1,8 +1,6 @@
 name: .NET Package Update
 
 on:
-  pull_request:
-    branches: [ "main" ]
   schedule:
     - cron: '30 7 * * 1'
   workflow_dispatch: # allow running by manual trigger
@@ -34,10 +32,10 @@ jobs:
         git diff -s --exit-code && exit 0
         git config --global user.email "bot@excos.dev"
         git config --global user.name "Excos Bot"
-        git checkout -b "package-update/run$GITHUB_RUN_NUMBER"
+        git checkout -b "package-update/dotnet/run$GITHUB_RUN_NUMBER"
         git add -u
-        git commit -m "Package update"
-        git push -u origin "package-update/run$GITHUB_RUN_NUMBER"
-        gh pr create -B main -H "package-update/run$GITHUB_RUN_NUMBER" --title ".NET Package Update ($(date %D))" --body "$(cat upgrade.md)\n\n<small>Created by Github Actions</small>"
+        git commit -m ".NET Package update"
+        git push -u origin "package-update/dotnet/run$GITHUB_RUN_NUMBER"
+        gh pr create -B main -H "package-update/dotnet/run$GITHUB_RUN_NUMBER" --title ".NET Package Update ($(date +%D))" --body "$(cat upgrade.md)"
       env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
