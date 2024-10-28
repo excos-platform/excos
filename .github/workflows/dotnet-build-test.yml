@@ -25,7 +25,7 @@ jobs:
     - name: Build
       run: dotnet build --no-restore
     - name: Test
-      run: dotnet test --no-build --verbosity normal -logger:"junit;LogFilePath=dotnet-test-result.xml"
+      run: dotnet test --no-build --verbosity normal --logger:"junit;LogFilePath=dotnet-test-result.xml"
     - name: Test Summary
       uses: test-summary/action@v2
       with:
