@@ -1,0 +1,36 @@
+services:
+  excos:
+    image: excos:${VERSION}
+    networks: [ excos_inner ]
+    environment:
+      ASPNETCORE_ENVIRONMENT: Staging
+      ASPNETCORE_URLS: http://excos:80/
+  proxy:
+    image: steveltn/https-portal
+    ports:
+    - '80:80'
+    - '443:443'
+    links:
+    - excos
+    deploy:
+      restart_policy:
+        condition: any
+        delay: 60s
+    volumes:
+      - proxy-data:/var/lib/https-portal
+    healthcheck:
+      test: ["CMD", "service", "nginx", "status"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+    environment:
+      DOMAINS: 'test.excos.dev -> http://excos'
+      STAGE: 'production'
+      WEBSOCKET: 'true'
+      CLIENT_MAX_BODY_SIZE: '0'
+    networks: [ excos_inner ]
+
+volumes:
+  proxy-data:
+networks:
+  excos_inner:

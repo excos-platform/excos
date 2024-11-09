@@ -1,0 +1,63 @@
+name: Publish .NET Service
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch: # allow running by manual trigger
+
+concurrency:
+  group: publish
+
+jobs:
+  publish:
+    name: Publish service
+    runs-on: ubuntu-latest
+    environment: test
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0 # full checkout
+    - name: Install GitVersion
+      uses: gittools/actions/gitversion/setup@v3.0.0
+    - name: Determine Version
+      id: version # step id used as reference for output values
+      uses: gittools/actions/gitversion/execute@v3.0.0
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+    - name: Install .NET Aspire workload
+      run: dotnet workload install aspire
+    
+    - name: .NET Publish
+      run: |
+        dotnet publish \
+        --os linux --arch x64 -c Release \
+        --self-contained true \
+        -p:PublishTrimmed=true \
+        -p:PublishProfile=DefaultContainer \
+        -p:Version=${{ steps.version.outputs.assemblySemVer }} \
+        -p:InformationalVersion=${{ steps.version.outputs.semVer }} \
+        -p:ShortSha=${{ steps.version.outputs.shortSha }}
+      working-directory: src/Excos.Platform.WebApiHost
+
+    - name: Container publish
+      env:
+        SSH_KEY: ${{ secrets.SSH_PASSWORD }}
+      run: |
+        echo "$SSH_KEY" > privkey
+        chmod 400 privkey # required by SSH
+        # disable ssh host verification
+        mkdir ~/.ssh
+        echo -e "Host ${{ secrets.SSH_HOST }}\n  StrictHostKeyChecking no" > ~/.ssh/config
+        # show image size
+        docker image ls excos
+        echo "(1) Uploading container image..."
+        docker save excos:${{ steps.version.outputs.semVer }} | gzip | ssh -i privkey ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "sudo /usr/bin/docker load"
+        echo "(2) Uploading docker-compose file..."
+        scp -i privkey docker/test-server/docker-compose.yml ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:~/staging
+        echo "(3) Running containers..."
+        ssh -i privkey ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd staging; export VERSION=${{ steps.version.outputs.semVer }}; sudo -E /usr/bin/docker-compose-up"
+        echo "(4) Cleaning up old images..."
+        ssh -i privkey ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "sudo /usr/bin/docker-rmi-old excos"
+

@@ -16,4 +16,13 @@
 		<PackageReference Include="OpenTelemetry.Instrumentation.Runtime" />
 	</ItemGroup>
 
+	<PropertyGroup>
+		<ContainerRepository>excos</ContainerRepository>
+		<ContainerImageTags>latest;$(InformationalVersion)</ContainerImageTags>
+		<ContainerBaseImage>mcr.microsoft.com/dotnet/runtime-deps:8.0-noble-chiseled</ContainerBaseImage>
+  	</PropertyGroup>
+  	<ItemGroup>
+    	<ContainerPort Include="80" Type="tcp" />
+  	</ItemGroup>
+
 </Project>
