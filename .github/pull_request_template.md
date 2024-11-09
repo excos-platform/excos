@@ -14,3 +14,6 @@
 
 ## Motivation
 <!-- Why were these changes made -->
+
+## Screenshots/Test Results
+<!-- If you have something nice to show -->

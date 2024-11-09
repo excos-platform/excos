@@ -4,9 +4,6 @@ on:
   push:
     branches: [ "main" ]
   workflow_dispatch: # allow running by manual trigger
-  #TODO: remove below
-  pull_request:
-    branches: [ "main" ]
 
 concurrency:
   group: publish
