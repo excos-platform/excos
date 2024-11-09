@@ -16,4 +16,12 @@
 		<PackageReference Include="OpenTelemetry.Instrumentation.Runtime" />
 	</ItemGroup>
 
+	<PropertyGroup>
+		<ContainerImageName>excos</ContainerImageName>
+		<ContainerImageTags>latest;$(InformationalVersion)</ContainerImageTags>
+  	</PropertyGroup>
+  	<ItemGroup>
+    	<ContainerPort Include="80" Type="tcp" />
+  	</ItemGroup>
+
 </Project>

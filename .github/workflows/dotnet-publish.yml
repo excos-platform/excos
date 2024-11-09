@@ -1,0 +1,41 @@
+name: Publish .NET Service
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch: # allow running by manual trigger
+  #TODO: remove below
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  publish:
+    name: Publish service
+    runs-on: ubuntu-latest
+    environment: test
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0 # full checkout
+    - name: Install GitVersion
+      uses: gittools/actions/gitversion/setup@v3.0.0
+    - name: Determine Version
+      id: version # step id used as reference for output values
+      uses: gittools/actions/gitversion/execute@v3.0.0
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+    - name: Install .NET Aspire workload
+      run: dotnet workload install aspire
+    
+    - name: .NET Publish
+      run: |
+        dotnet publish \
+        --os linux --arch x64 -c Release \
+        -p:PublishProfile=DefaultContainer \
+        -p:Version=${{ steps.version.outputs.assemblySemVer }} \
+        -p:InformationalVersion=${{ steps.version.outputs.semVer }} \
+        -p:ShortSha=${{ steps.version.outputs.shortSha }}
+      working-directory: src/Excos.Platform.WebApiHost
+

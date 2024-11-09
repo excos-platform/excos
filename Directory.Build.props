@@ -1,5 +1,12 @@
 <Project>
 	<PropertyGroup>
 		<NoWarn>$(NoWarn);ASPIRE001</NoWarn>
+
+		<!-- We want to set the following based on GitVersion output
+			/p Version=$(assemblySemVer)
+			/p InformationalVersion=$(semVer)
+			/p ShortSha=$(shortSha)
+		-->
+		<SourceRevisionId Condition="'$(ShortSha)' != ''">$(ShortSha)</SourceRevisionId>
 	</PropertyGroup>
 </Project>
