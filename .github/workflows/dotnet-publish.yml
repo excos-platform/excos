@@ -36,6 +36,8 @@ jobs:
       run: |
         dotnet publish \
         --os linux --arch x64 -c Release \
+        --self-contained true \
+        -p:PublishTrimmed=true \
         -p:PublishProfile=DefaultContainer \
         -p:Version=${{ steps.version.outputs.assemblySemVer }} \
         -p:InformationalVersion=${{ steps.version.outputs.semVer }} \
@@ -44,7 +46,6 @@ jobs:
 
     - name: Container publish
       env:
-        VERSION: ${{ steps.version.outputs.semVer }}
         SSH_KEY: ${{ secrets.SSH_PASSWORD }}
       run: |
         echo "$SSH_KEY" > privkey
@@ -52,12 +53,14 @@ jobs:
         # disable ssh host verification
         mkdir ~/.ssh
         echo -e "Host ${{ secrets.SSH_HOST }}\n  StrictHostKeyChecking no\n  UserKnownHostsFile=/dev/null" > ~/.ssh/config
+        # show image size
+        docker image ls excos
         echo "(1) Uploading container image..."
-        docker save excos:$VERSION | gzip | ssh -i privkey ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "sudo /usr/bin/docker load"
+        docker save excos:${{ steps.version.outputs.semVer }} | gzip | ssh -i privkey ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "sudo /usr/bin/docker load"
         echo "(2) Uploading docker-compose file..."
         scp -i privkey docker/test-server/docker-compose.yml ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:~/staging
         echo "(3) Running containers..."
-        ssh -i privkey ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd staging; VERSION=$VERSION sudo /usr/bin/docker-compose-up"
+        ssh -i privkey ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd staging; VERSION=${{ steps.version.outputs.semVer }} sudo /usr/bin/docker-compose-up"
         echo "(4) Cleaning up old images..."
         ssh -i privkey ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "sudo /usr/bin/docker-rmi-old excos"
 
