@@ -44,7 +44,7 @@ jobs:
 
     - name: Container publish
       env:
-      - VERSION: ${{ steps.version.outputs.semVer }}
+        VERSION: ${{ steps.version.outputs.semVer }}
       run: |
         echo ${{ secrets.SSH_PASSWORD }} > privkey
         # copy image onto the test server
