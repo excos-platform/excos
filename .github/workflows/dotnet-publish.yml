@@ -60,7 +60,7 @@ jobs:
         echo "(2) Uploading docker-compose file..."
         scp -i privkey docker/test-server/docker-compose.yml ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:~/staging
         echo "(3) Running containers..."
-        ssh -i privkey ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd staging; VERSION=${{ steps.version.outputs.semVer }} sudo /usr/bin/docker-compose-up"
+        ssh -i privkey ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd staging; export VERSION=${{ steps.version.outputs.semVer }}; sudo -E /usr/bin/docker-compose-up"
         echo "(4) Cleaning up old images..."
         ssh -i privkey ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "sudo /usr/bin/docker-rmi-old excos"
 
