@@ -12,22 +12,10 @@ concurrency:
   group: publish
 
 jobs:
-  wait:
-    name: Wait on build
-    runs-on: ubuntu-latest
-    steps:
-    - name: Wait for build to complete
-      uses: lewagon/wait-on-check-action@v1.3.4
-      with:
-        ref: ${{ github.ref }}
-        check-regexp: .*build.*
-        repo-token: ${{ secrets.GITHUB_TOKEN }}
-        wait-interval: 10
   publish:
     name: Publish service
     runs-on: ubuntu-latest
     environment: test
-    needs: [ wait ]
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
@@ -53,4 +41,18 @@ jobs:
         -p:InformationalVersion=${{ steps.version.outputs.semVer }} \
         -p:ShortSha=${{ steps.version.outputs.shortSha }}
       working-directory: src/Excos.Platform.WebApiHost
+
+    - name: Container publish
+      env:
+      - VERSION: ${{ steps.version.outputs.semVer }}
+      run: |
+        echo ${{ secrets.SSH_PASSWORD }} > privkey
+        # copy image onto the test server
+        docker save excos:$VERSION | gzip | ssh -i privkey ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "sudo /usr/bin/docker load"
+        # upload docker-compose file
+        scp -i privkey docker/test-server/docker-compose.yml ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/staging
+        # run containers
+        ssh -i privkey ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd staging; VERSION=$VERSION sudo /usr/bin/docker-compose-up"
+        # clean up
+        ssh -i privkey ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "sudo /usr/bin/docker-rmi-old excos"
 
