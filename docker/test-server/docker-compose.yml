@@ -4,6 +4,7 @@ services:
     networks: [ excos_inner ]
     environment:
       ASPNETCORE_ENVIRONMENT: Staging
+      ASPNETCORE_URLS: http://excos:80/
   proxy:
     image: steveltn/https-portal
     ports:
