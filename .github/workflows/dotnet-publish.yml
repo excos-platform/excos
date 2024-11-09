@@ -46,7 +46,7 @@ jobs:
       env:
         VERSION: ${{ steps.version.outputs.semVer }}
       run: |
-        echo ${{ secrets.SSH_PASSWORD }} > privkey
+        echo "${{ secrets.SSH_PASSWORD }}" > privkey
         # copy image onto the test server
         docker save excos:$VERSION | gzip | ssh -i privkey ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "sudo /usr/bin/docker load"
         # upload docker-compose file
