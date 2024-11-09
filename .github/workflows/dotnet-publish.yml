@@ -45,8 +45,9 @@ jobs:
     - name: Container publish
       env:
         VERSION: ${{ steps.version.outputs.semVer }}
+        SSH_KEY: ${{ secrets.SSH_PASSWORD }}
       run: |
-        echo "${{ secrets.SSH_PASSWORD }}" > privkey
+        echo "$SSH_KEY" > privkey
         # copy image onto the test server
         docker save excos:$VERSION | gzip | ssh -i privkey ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "sudo /usr/bin/docker load"
         # upload docker-compose file
