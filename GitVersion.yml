@@ -1,5 +1,5 @@
 workflow: TrunkBased/preview1
 major-version-bump-message: \[BREAKING\]
 minor-version-bump-message: \[NEW\]
-patch-version-bump-message: \[(FIX|DOCS|BUILD|PERF|WORK)\]
+patch-version-bump-message: \[(FIX|DOCS|BUILD|PERF|DEPS|WORK)\]
 no-bump-message: \[SKIP\]
