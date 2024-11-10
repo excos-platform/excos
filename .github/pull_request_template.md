@@ -5,6 +5,7 @@
 [DOCS] - docs change
 [BUILD] - build system change
 [PERF] - performance improvement (should include benchmarks)
+[DEPS] - dependency update
 [WORK] - generic changes
 [SKIP] - no changes to the source files, no version changes
 -->
