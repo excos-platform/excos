@@ -2,7 +2,7 @@ name: Add PR size label
 
 on: 
   pull_request_target:
-		types: [opened, synchronize, reopened]
+    types: [opened, synchronize, reopened]
 
 jobs:
   labeler:
@@ -30,4 +30,3 @@ jobs:
             Please make sure you are NOT addressing multiple issues with one PR.
             Note this PR might be rejected due to its size.
           ignore_file_deletions: true
-	
