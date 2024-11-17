@@ -1,7 +1,8 @@
 name: Add PR size label
 
 on: 
-  pull_request:
+  pull_request_target:
+    types: [opened, synchronize, reopened]
 
 jobs:
   labeler:
@@ -11,8 +12,8 @@ jobs:
       issues: write
     runs-on: ubuntu-latest
     name: Label the PR size
-    env:
-      SHELLOPTS: xtrace
+    #env:
+    #  SHELLOPTS: xtrace # debug action
     steps:
       - uses: codelytv/pr-size-labeler@v1
         with:
