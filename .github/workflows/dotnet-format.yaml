@@ -24,6 +24,7 @@ jobs:
       run: dotnet format
     - name: Add updated files to Git
       run: |
+        git checkout ${{ github.head_ref }}
         git diff -s --exit-code && exit 0
         git config --global user.email "bot@excos.dev"
         git config --global user.name "Excos Bot"
