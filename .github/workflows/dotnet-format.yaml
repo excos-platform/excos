@@ -1,0 +1,34 @@
+name: .NET Format
+
+on:
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  check-for-updates:
+    name: Format
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0 # full checkout
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+    - name: Install .NET Aspire workload
+      run: dotnet workload install aspire
+    
+    - name: Run dotnet format
+      run: dotnet format
+    - name: Add updated files to Git
+      run: |
+        git diff -s --exit-code && exit 0
+        git config --global user.email "bot@excos.dev"
+        git config --global user.name "Excos Bot"
+        git add -u
+        git commit -m ".NET Format"
+        git push
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
