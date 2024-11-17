@@ -15,6 +15,8 @@ jobs:
       SHELLOPTS: xtrace
     steps:
       - uses: codelytv/pr-size-labeler@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           xs_label: 'size:XS'
           xs_max_size: '25'

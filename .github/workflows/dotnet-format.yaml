@@ -22,15 +22,11 @@ jobs:
     
     - name: Run dotnet format
       run: dotnet format
-    - name: Add updated files to Git
-      run: |
-        git checkout ${{ github.head_ref }}
-        git diff -s --exit-code && exit 0
-        git config --global user.email "bot@excos.dev"
-        git config --global user.name "Excos Bot"
-        git config --global core.autocrlf input
-        git add -u
-        git commit -m ".NET Format"
-        git push
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    # initially this workflow was going to push formatted changes
+    # to the PR branch (saving my time), but GitHub doesn't allow
+    # running workflows on top of commit pushed using GITHUB_TOKEN
+    # which means after a format I would anyways have to push an empty commit
+    # to trigger build.
+    # see https://github.com/orgs/community/discussions/25702
+    - name: Check if there's any changes
+      run: git diff -s --exit-code
