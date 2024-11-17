@@ -1,4 +1,7 @@
-﻿using OpenTelemetry;
+﻿// Copyright (c) Marian Dziubiak.
+// Licensed under the GNU Affero General Public License v3.
+
+using OpenTelemetry;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
 
@@ -36,7 +39,7 @@ public static class TelemetryConfigurationExtensions
 
 	private static IHostApplicationBuilder AddOpenTelemetryExporters(this IHostApplicationBuilder builder)
 	{
-		var useOtlpExporter = !string.IsNullOrWhiteSpace(builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"]);
+		bool useOtlpExporter = !string.IsNullOrWhiteSpace(builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"]);
 
 		if (useOtlpExporter)
 		{

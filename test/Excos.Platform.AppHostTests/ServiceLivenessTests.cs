@@ -1,3 +1,6 @@
+// Copyright (c) Marian Dziubiak.
+// Licensed under the GNU Affero General Public License v3.
+
 namespace Excos.Platform.AppHostTests.Tests;
 
 public class ServiceLivenessTests
@@ -6,11 +9,11 @@ public class ServiceLivenessTests
 	public async Task GetWebResourceRootReturnsOkStatusCode()
 	{
 		// Arrange
-		await using var app = await AppHost.StartAsync();
+		await using DistributedApplication app = await AppHost.StartAsync();
 
 		// Act
-		var httpClient = await app.GetWebApiClientAsync();
-		var response = await httpClient.GetAsync("/alive");
+		HttpClient httpClient = await app.GetWebApiClientAsync();
+		HttpResponseMessage response = await httpClient.GetAsync("/alive");
 
 		// Assert
 		Assert.Equal(HttpStatusCode.OK, response.StatusCode);

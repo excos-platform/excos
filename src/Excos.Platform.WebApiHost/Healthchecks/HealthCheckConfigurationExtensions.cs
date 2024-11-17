@@ -1,4 +1,7 @@
-﻿using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+﻿// Copyright (c) Marian Dziubiak.
+// Licensed under the GNU Affero General Public License v3.
+
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 namespace Excos.Platform.WebApiHost.Healthchecks;
