@@ -1,7 +1,10 @@
+// Copyright (c) Marian Dziubiak.
+// Licensed under the GNU Affero General Public License v3.
+
 using Excos.Platform.WebApiHost.Healthchecks;
 using Excos.Platform.WebApiHost.Telemetry;
 
-var builder = WebApplication.CreateBuilder(args);
+WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 builder.ConfigureOpenTelemetry();
 
@@ -18,7 +21,7 @@ builder.Services.ConfigureHttpClientDefaults(http =>
 	http.AddServiceDiscovery();
 });
 
-var app = builder.Build();
+WebApplication app = builder.Build();
 
 app.MapGet("/", () => "Hello World!");
 app.MapDevHealthCheckEndpoints();

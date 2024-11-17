@@ -1,0 +1,34 @@
+name: .NET Format
+
+on:
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  check-for-updates:
+    name: Format
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0 # full checkout
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+    - name: Install .NET Aspire workload
+      run: dotnet workload install aspire
+    
+    - name: Run dotnet format
+      run: dotnet format
+    # initially this workflow was going to push formatted changes
+    # to the PR branch (saving my time), but GitHub doesn't allow
+    # running workflows on top of commit pushed using GITHUB_TOKEN
+    # which means after a format I would anyways have to push an empty commit
+    # to trigger build.
+    # see https://github.com/orgs/community/discussions/25702
+    - name: Check if there's any changes
+      run: |
+        git config --global core.autocrlf input
+        git diff -s --exit-code
