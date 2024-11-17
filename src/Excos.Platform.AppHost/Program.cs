@@ -5,6 +5,11 @@ using Projects;
 
 IDistributedApplicationBuilder builder = DistributedApplication.CreateBuilder(args);
 
-builder.AddProject<Excos_Platform_WebApiHost>("WebApiHost");
+IResourceBuilder<PostgresServerResource> postgres = builder.AddPostgres("postgres");
+
+builder.AddProject<Excos_Platform_WebApiHost>("WebApiHost")
+	.WaitFor(postgres)
+	.WithReference(postgres, "postgres");
+
 
 builder.Build().Run();
