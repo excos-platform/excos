@@ -11,6 +11,8 @@ jobs:
       issues: write
     runs-on: ubuntu-latest
     name: Label the PR size
+    env:
+      SHELLOPTS: xtrace
     steps:
       - uses: codelytv/pr-size-labeler@v1
         with:
@@ -29,5 +31,3 @@ jobs:
             Please make sure you are NOT addressing multiple issues with one PR.
             Note this PR might be rejected due to its size.
           ignore_file_deletions: true
-        env:
-          BASHOPTS: xtrace

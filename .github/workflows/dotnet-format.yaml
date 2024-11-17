@@ -28,6 +28,7 @@ jobs:
         git diff -s --exit-code && exit 0
         git config --global user.email "bot@excos.dev"
         git config --global user.name "Excos Bot"
+        git config --global core.autocrlf input
         git add -u
         git commit -m ".NET Format"
         git push
