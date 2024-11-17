@@ -29,4 +29,6 @@ jobs:
     # to trigger build.
     # see https://github.com/orgs/community/discussions/25702
     - name: Check if there's any changes
-      run: git diff -s --exit-code
+      run: |
+        git config --global core.autocrlf input
+        git diff -s --exit-code
