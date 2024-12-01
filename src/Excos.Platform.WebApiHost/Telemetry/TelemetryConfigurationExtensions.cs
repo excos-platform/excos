@@ -22,14 +22,16 @@ public static class TelemetryConfigurationExtensions
 			{
 				metrics.AddAspNetCoreInstrumentation()
 					.AddHttpClientInstrumentation()
-					.AddRuntimeInstrumentation();
+					.AddRuntimeInstrumentation()
+					.AddMeter("Marten", "Wolverine");
 			})
 			.WithTracing(tracing =>
 			{
 				tracing.AddAspNetCoreInstrumentation()
 					// Uncomment the following line to enable gRPC instrumentation (requires the OpenTelemetry.Instrumentation.GrpcNetClient package)
 					//.AddGrpcClientInstrumentation()
-					.AddHttpClientInstrumentation();
+					.AddHttpClientInstrumentation()
+					.AddSource("Marten", "Wolverine");
 			});
 
 		builder.AddOpenTelemetryExporters();

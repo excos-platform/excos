@@ -11,6 +11,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Excos.Platform.WebApiHost",
 EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Excos.Platform.WebApiHostTests", "test\Excos.Platform.WebApiHostTests\Excos.Platform.WebApiHostTests.fsproj", "{F7E99834-3875-46EF-9441-6FEDC1617B90}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Excos.Platform.Common", "src\Excos.Platform.Common\Excos.Platform.Common.csproj", "{A2D25FDA-F00D-4F03-99C1-C5CC9AE4BEC9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{F7E99834-3875-46EF-9441-6FEDC1617B90}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F7E99834-3875-46EF-9441-6FEDC1617B90}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F7E99834-3875-46EF-9441-6FEDC1617B90}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A2D25FDA-F00D-4F03-99C1-C5CC9AE4BEC9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A2D25FDA-F00D-4F03-99C1-C5CC9AE4BEC9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A2D25FDA-F00D-4F03-99C1-C5CC9AE4BEC9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A2D25FDA-F00D-4F03-99C1-C5CC9AE4BEC9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
