@@ -26,5 +26,8 @@
 	<ItemGroup>
 		<ContainerPort Include="80" Type="tcp" />
 	</ItemGroup>
+	<ItemGroup>
+	  <ProjectReference Include="..\Excos.Platform.Common\Excos.Platform.Common.csproj" />
+	</ItemGroup>
 
 </Project>
