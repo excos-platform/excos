@@ -8,6 +8,7 @@ using JasperFx.CodeGeneration;
 using JasperFx.CodeGeneration.Frames;
 using JasperFx.CodeGeneration.Model;
 using JasperFx.Core.Reflection;
+using Wolverine;
 using Wolverine.Configuration;
 
 namespace Excos.Platform.Common.Wolverine.Telemetry;
@@ -18,6 +19,7 @@ internal class EventLoggingFrame : SyncFrame
 	private readonly List<PrivacyValueDescriptor> members;
 	private Variable? input;
 	private Variable? redactor;
+	private Variable? envelope;
 
 	public EventLoggingFrame(IChain chain)
 	{
@@ -35,6 +37,9 @@ internal class EventLoggingFrame : SyncFrame
 
 		this.redactor = chain.FindVariable(typeof(PrivacyValueRedactor));
 		yield return this.redactor;
+
+		this.envelope = chain.FindVariable(typeof(Envelope));
+		yield return this.envelope;
 	}
 
 	public override void GenerateCode(GeneratedMethod method, ISourceWriter writer)
@@ -44,7 +49,12 @@ internal class EventLoggingFrame : SyncFrame
 		writer.WriteLine($"if ({typeof(Activity).FullNameInCode()}.{nameof(Activity.Current)} != null) {{");
 		writer.IndentionLevel++;
 		writer.WriteLine($"var eventTags = new {typeof(ActivityTagsCollection).FullNameInCode()}();");
-		// TODO: tenantId?
+		// No point in logging those as they are already present in the activity
+		//writer.WriteLine($"eventTags.{nameof(ActivityTagsCollection.Add)}(\"EnvelopeId\", {this.envelope!.Usage}.{nameof(Envelope.Id)});");
+		//writer.WriteLine($"eventTags.{nameof(ActivityTagsCollection.Add)}(\"{nameof(Envelope.ConversationId)}\", {this.envelope!.Usage}.{nameof(Envelope.ConversationId)});");
+		//writer.WriteLine($"eventTags.{nameof(ActivityTagsCollection.Add)}(\"{nameof(Envelope.CorrelationId)}\", {this.envelope!.Usage}.{nameof(Envelope.CorrelationId)});");
+		//writer.WriteLine($"eventTags.{nameof(ActivityTagsCollection.Add)}(\"{nameof(Envelope.TenantId)}\", {this.envelope!.Usage}.{nameof(Envelope.TenantId)});");
+
 		foreach (PrivacyValueDescriptor member in this.members)
 			writer.WriteLine(
 				$"eventTags.{nameof(ActivityTagsCollection.Add)}(\"{member.OpenTelemetryName}\", {this.redactor!.Usage}.{nameof(PrivacyValueRedactor.Redact)}({this.input!.Usage}.{member.Source.Name}, {typeof(PrivacyValueRedaction).FullNameInCode()}.{member.Redaction}));");

@@ -62,9 +62,8 @@ internal class CustomMartenLogger(PrivacyValueRedactor Redactor, ILogger Inner) 
 				List<PrivacyValueDescriptor> privacyDescriptors = PrivacyValueDescriptor.GetDescriptors(evnt.Data.GetType());
 				var eventTags = new ActivityTagsCollection
 				{
-					{ "User.TenantId", evnt.TenantId },
-					{ "Event.Version", evnt.Version },
-					{ "Event.Sequence", evnt.Sequence }
+					{ "_EventVersion", evnt.Version },
+					{ "_EventSequence", evnt.Sequence }
 				};
 
 				foreach (PrivacyValueDescriptor descriptor in privacyDescriptors)

@@ -61,8 +61,6 @@ builder.Services.AddWolverine(options =>
 
 	options.Policies.AutoApplyTransactions();
 
-	options.Services.AddLoggingMessageBus();
-
 	options.Discovery
 		.AddLogger<IncreaseCounterCommand>()
 		.AddLogger<CounterIncreased>();
@@ -78,10 +76,16 @@ app.MapGet("/counter/{id}", async ([FromRoute] string id, [FromKeyedServices("co
 	Counter? counter = await session.Events.AggregateStreamAsync<Counter>(id);
 	return counter?.Value ?? 0;
 });
-app.MapPost("/counter/{id}/increase", async ([FromRoute] string id, IMessageBus bus) =>
+app.MapPost("/counter/{id}/increase", async ([FromRoute] string id, [FromQuery] string? tenantId, IMessageBus bus) =>
 {
-	Activity.Current?.AddEvent(new ActivityEvent("IncreaseCounter", tags: [System.Collections.Generic.KeyValuePair.Create("Id", (object?)id)]));
-	await bus.InvokeAsync(new IncreaseCounterCommand(id));
+	if (tenantId != null)
+	{
+		await bus.InvokeForTenantAsync(tenantId, new IncreaseCounterCommand(id));
+	}
+	else
+	{
+		await bus.InvokeAsync(new IncreaseCounterCommand(id));
+	}
 	return "Counter increased";
 });
 app.MapDevHealthCheckEndpoints();

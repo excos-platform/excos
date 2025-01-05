@@ -21,7 +21,7 @@ internal record class PrivacyValueDescriptor(MemberInfo Source, PrivacyValueReda
 			return displayName;
 		}
 
-		displayName = source.GetCustomAttribute<DisplayNameAttribute>()?.DisplayName ?? $"Data.{source.Name}";
+		displayName = source.GetCustomAttribute<DisplayNameAttribute>()?.DisplayName ?? $"{source.Name}";
 		MemberDisplayNameCache[source] = displayName;
 		return displayName;
 	}
