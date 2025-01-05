@@ -5,9 +5,11 @@ using Excos.Platform.Common.Marten.Telemetry;
 using Excos.Platform.Common.Privacy.Redaction;
 using Marten;
 using Marten.Events;
+using Marten.Events.Daemon.Resiliency;
 using Marten.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Weasel.Core;
 using Wolverine.Marten;
@@ -16,7 +18,7 @@ namespace Excos.Platform.Common.Marten;
 
 public static class StoreConfigurationExtensions
 {
-	public static IServiceCollection AddExcosMartenStore<TStore>(this IServiceCollection services, IConfiguration configuration, string dbSchemaName, Action<StoreOptions>? configureOptions = null)
+	public static IServiceCollection AddExcosMartenStore<TStore>(this IServiceCollection services, IHostEnvironment hostEnvironment, IConfiguration configuration, string dbSchemaName, Action<StoreOptions>? configureOptions = null)
 		where TStore : class, IDocumentStore
 	{
 		ArgumentException.ThrowIfNullOrWhiteSpace(dbSchemaName, nameof(dbSchemaName));
@@ -26,7 +28,9 @@ public static class StoreConfigurationExtensions
 			var options = new StoreOptions();
 			options.Connection(configuration.GetConnectionString("postgres") ?? string.Empty);
 			options.Events.DatabaseSchemaName = dbSchemaName;
-			
+
+			// TODO: set up multi-tenancy
+
 			options.OpenTelemetry.TrackConnections = TrackLevel.Normal;
 			options.OpenTelemetry.TrackEventCounters();
 
@@ -43,7 +47,14 @@ public static class StoreConfigurationExtensions
 
 			return options;
 		})
-			.IntegrateWithWolverine();
+			.IntegrateWithWolverine()
+			// TODO: decide if ProcessEventsWithWolverineHandlersInStrictOrder would be better here
+			.PublishEventsToWolverine(dbSchemaName, relay =>
+			{
+				relay.Options.SubscribeFromPresent();
+			})
+			// async deamon is needed to process projections, such as subscription based forwarding events to Wolverine
+			.AddAsyncDaemon(hostEnvironment.IsDevelopment() ? DaemonMode.Solo : DaemonMode.HotCold);
 
 		services.AddKeyedScoped<IDocumentSession>(dbSchemaName, (services, _) => services.GetRequiredService<TStore>().LightweightSession());
 

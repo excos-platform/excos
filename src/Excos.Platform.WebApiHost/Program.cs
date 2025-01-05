@@ -5,9 +5,11 @@ using System.Diagnostics;
 using Excos.Platform.Common.Marten;
 using Excos.Platform.Common.Privacy;
 using Excos.Platform.Common.Privacy.Redaction;
+using Excos.Platform.Common.Wolverine;
 using Excos.Platform.Common.Wolverine.Telemetry;
 using Excos.Platform.WebApiHost.Healthchecks;
 using Excos.Platform.WebApiHost.Telemetry;
+using JasperFx.Core;
 using Marten;
 using Marten.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -15,6 +17,7 @@ using Oakton;
 using Weasel.Core;
 using Wolverine;
 using Wolverine.Marten;
+using Wolverine.Runtime;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
@@ -46,13 +49,23 @@ builder.Services.AddMarten(options =>
 	.IntegrateWithWolverine()
 	.UseLightweightSessions();
 
-builder.Services.AddExcosMartenStore<ICounterStore>(builder.Configuration, "counters");
+builder.Services.AddExcosMartenStore<ICounterStore>(builder.Environment, builder.Configuration, "counters");
 
 builder.Services.AddSingleton<PrivacyValueRedactor>();
 
 builder.Services.AddWolverine(options =>
 {
 	options.Policies.Add<EventLoggingPolicy>();
+
+	options.Policies.UseDurableLocalQueues();
+
+	options.Policies.AutoApplyTransactions();
+
+	options.Services.AddLoggingMessageBus();
+
+	options.Discovery
+		.AddLogger<IncreaseCounterCommand>()
+		.AddLogger<CounterIncreased>();
 });
 
 WebApplication app = builder.Build();
@@ -60,9 +73,8 @@ WebApplication app = builder.Build();
 var idBase = Guid.Parse("60623ee8-6f9a-45b9-840e-09d7560b4643");
 
 app.MapGet("/", () => "Hello World!");
-app.MapGet("/counter/{id}", async ([FromRoute] string id, ICounterStore store) =>
+app.MapGet("/counter/{id}", async ([FromRoute] string id, [FromKeyedServices("counters")] IDocumentSession session) =>
 {
-	IDocumentSession session = store.LightweightSession();
 	Counter? counter = await session.Events.AggregateStreamAsync<Counter>(id);
 	return counter?.Value ?? 0;
 });
@@ -74,7 +86,10 @@ app.MapPost("/counter/{id}/increase", async ([FromRoute] string id, IMessageBus 
 });
 app.MapDevHealthCheckEndpoints();
 
-return await app.RunOaktonCommands(args);
+// TODO: can we runoaktoncommands while catching startup exceptions?
+await app.RunAsync();
+return 0;
+//return await app.RunOaktonCommands(args);
 
 public interface ICounterStore : IDocumentStore;
 public record IncreaseCounterCommand([property: UPI] string CounterId);

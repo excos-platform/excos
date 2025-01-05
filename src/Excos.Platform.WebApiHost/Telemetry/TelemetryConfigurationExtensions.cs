@@ -23,7 +23,8 @@ public static class TelemetryConfigurationExtensions
 				metrics.AddAspNetCoreInstrumentation()
 					.AddHttpClientInstrumentation()
 					.AddRuntimeInstrumentation()
-					.AddMeter("Marten", "Wolverine");
+					.AddMeter("Marten")
+					.AddMeter("Wolverine:Excos.Platform.WebApiHost");
 			})
 			.WithTracing(tracing =>
 			{
