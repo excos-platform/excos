@@ -7,3 +7,7 @@ POST https://localhost:7024/counter/hello/increase?tenantId=subtenant
 ###
 
 GET https://localhost:7024/counter/hello
+
+###
+
+GET https://localhost:7024/counter/hello?tenantId=subtenant

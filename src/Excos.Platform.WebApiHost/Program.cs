@@ -1,15 +1,12 @@
 // Copyright (c) Marian Dziubiak.
 // Licensed under the GNU Affero General Public License v3.
 
-using System.Diagnostics;
 using Excos.Platform.Common.Marten;
 using Excos.Platform.Common.Privacy;
 using Excos.Platform.Common.Privacy.Redaction;
-using Excos.Platform.Common.Wolverine;
 using Excos.Platform.Common.Wolverine.Telemetry;
 using Excos.Platform.WebApiHost.Healthchecks;
 using Excos.Platform.WebApiHost.Telemetry;
-using JasperFx.Core;
 using Marten;
 using Marten.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -17,7 +14,6 @@ using Oakton;
 using Weasel.Core;
 using Wolverine;
 using Wolverine.Marten;
-using Wolverine.Runtime;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
@@ -49,7 +45,7 @@ builder.Services.AddMarten(options =>
 	.IntegrateWithWolverine()
 	.UseLightweightSessions();
 
-builder.Services.AddExcosMartenStore<ICounterStore>(builder.Environment, builder.Configuration, "counters");
+builder.AddExcosMartenStore<ICounterStore>("counters");
 
 builder.Services.AddSingleton<PrivacyValueRedactor>();
 
@@ -68,32 +64,64 @@ builder.Services.AddWolverine(options =>
 
 WebApplication app = builder.Build();
 
-var idBase = Guid.Parse("60623ee8-6f9a-45b9-840e-09d7560b4643");
+MapApplicationEndpoints(app);
 
-app.MapGet("/", () => "Hello World!");
-app.MapGet("/counter/{id}", async ([FromRoute] string id, [FromKeyedServices("counters")] IDocumentSession session) =>
+try
 {
-	Counter? counter = await session.Events.AggregateStreamAsync<Counter>(id);
-	return counter?.Value ?? 0;
-});
-app.MapPost("/counter/{id}/increase", async ([FromRoute] string id, [FromQuery] string? tenantId, IMessageBus bus) =>
-{
-	if (tenantId != null)
+	// In order to observe startup exceptions (such as when resolving an IHostedService)
+	// we will be running the host on its own outside of development.
+	// Oakton logs exception to console and does not rethrow it.
+	if (app.Environment.IsDevelopment())
 	{
-		await bus.InvokeForTenantAsync(tenantId, new IncreaseCounterCommand(id));
+		return await app.RunOaktonCommands(args);
 	}
-	else
-	{
-		await bus.InvokeAsync(new IncreaseCounterCommand(id));
-	}
-	return "Counter increased";
-});
-app.MapDevHealthCheckEndpoints();
 
-// TODO: can we runoaktoncommands while catching startup exceptions?
-await app.RunAsync();
-return 0;
-//return await app.RunOaktonCommands(args);
+	await app.RunAsync();
+	return 0;
+}
+catch (Exception ex)
+{
+	Console.Error.WriteLine(ex.ToString());
+
+	try
+	{
+		// Try to log the exception via open telemetry
+		HostApplicationBuilder emergencyHostBuilder = Host.CreateEmptyApplicationBuilder(new());
+		emergencyHostBuilder.ConfigureOpenTelemetry();
+
+		using (IHost emergencyHost = emergencyHostBuilder.Build())
+		{
+			emergencyHost.Services.GetRequiredService<ILogger<Program>>().LogCritical(ex, "Host terminated unexpectedly");
+		}
+	}
+	finally { }
+
+	return 1;
+}
+
+static void MapApplicationEndpoints(WebApplication app)
+{
+	app.MapGet("/", () => "Hello World!");
+	app.MapGet("/counter/{id}", async ([FromRoute] string id, [FromQuery] string? tenantId, ICounterStore store) =>
+	{
+		IDocumentSession session = tenantId != null ? store.LightweightSession(tenantId) : store.LightweightSession();
+		Counter? counter = await session.Events.AggregateStreamAsync<Counter>(id);
+		return counter?.Value ?? 0;
+	});
+	app.MapPost("/counter/{id}/increase", async ([FromRoute] string id, [FromQuery] string? tenantId, IMessageBus bus) =>
+	{
+		if (tenantId != null)
+		{
+			await bus.InvokeForTenantAsync(tenantId, new IncreaseCounterCommand(id));
+		}
+		else
+		{
+			await bus.InvokeAsync(new IncreaseCounterCommand(id));
+		}
+		return "Counter increased";
+	});
+	app.MapDevHealthCheckEndpoints();
+}
 
 public interface ICounterStore : IDocumentStore;
 public record IncreaseCounterCommand([property: UPI] string CounterId);

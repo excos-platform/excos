@@ -3,6 +3,7 @@
 
 using Excos.Platform.Common.Marten.Telemetry;
 using Excos.Platform.Common.Privacy.Redaction;
+using JasperFx.Core;
 using Marten;
 using Marten.Events;
 using Marten.Events.Daemon.Resiliency;
@@ -18,7 +19,25 @@ namespace Excos.Platform.Common.Marten;
 
 public static class StoreConfigurationExtensions
 {
-	public static IServiceCollection AddExcosMartenStore<TStore>(this IServiceCollection services, IHostEnvironment hostEnvironment, IConfiguration configuration, string dbSchemaName, Action<StoreOptions>? configureOptions = null)
+	public static IHostApplicationBuilder AddExcosMartenStore<TStore>(
+		this IHostApplicationBuilder builder,
+		string dbSchemaName,
+		Action<StoreOptions>? configureOptions = null)
+		where TStore : class, IDocumentStore
+	{
+		ArgumentException.ThrowIfNullOrWhiteSpace(dbSchemaName, nameof(dbSchemaName));
+
+		builder.Services.AddExcosMartenStore<TStore>(builder.Environment, builder.Configuration, dbSchemaName, configureOptions);
+
+		return builder;
+	}
+
+	public static IServiceCollection AddExcosMartenStore<TStore>(
+		this IServiceCollection services,
+		IHostEnvironment hostEnvironment,
+		IConfiguration configuration,
+		string dbSchemaName,
+		Action<StoreOptions>? configureOptions = null)
 		where TStore : class, IDocumentStore
 	{
 		ArgumentException.ThrowIfNullOrWhiteSpace(dbSchemaName, nameof(dbSchemaName));
@@ -26,10 +45,15 @@ public static class StoreConfigurationExtensions
 		services.AddMartenStore<TStore>(provider =>
 		{
 			var options = new StoreOptions();
+
+			options.Policies.AllDocumentsAreMultiTenanted();
+			options.Policies.PartitionMultiTenantedDocumentsUsingMartenManagement("tenants");
+
+			//TODO: figure out how to set up MT
+			options.MultiTenantedWithSingleServer(configuration.GetConnectionString("postgres") ?? string.Empty);
+
 			options.Connection(configuration.GetConnectionString("postgres") ?? string.Empty);
 			options.Events.DatabaseSchemaName = dbSchemaName;
-
-			// TODO: set up multi-tenancy
 
 			options.OpenTelemetry.TrackConnections = TrackLevel.Normal;
 			options.OpenTelemetry.TrackEventCounters();
@@ -56,6 +80,7 @@ public static class StoreConfigurationExtensions
 			// async deamon is needed to process projections, such as subscription based forwarding events to Wolverine
 			.AddAsyncDaemon(hostEnvironment.IsDevelopment() ? DaemonMode.Solo : DaemonMode.HotCold);
 
+		// TODO once we have a tenant context service we need to add tenant id to the session
 		services.AddKeyedScoped<IDocumentSession>(dbSchemaName, (services, _) => services.GetRequiredService<TStore>().LightweightSession());
 
 		return services;
