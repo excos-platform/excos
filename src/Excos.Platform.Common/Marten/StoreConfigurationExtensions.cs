@@ -48,11 +48,8 @@ public static class StoreConfigurationExtensions
 
 			options.Policies.AllDocumentsAreMultiTenanted();
 			options.Policies.PartitionMultiTenantedDocumentsUsingMartenManagement("tenants");
-
-			//TODO: figure out how to set up MT
 			options.MultiTenantedWithSingleServer(configuration.GetConnectionString("postgres") ?? string.Empty);
 
-			options.Connection(configuration.GetConnectionString("postgres") ?? string.Empty);
 			options.Events.DatabaseSchemaName = dbSchemaName;
 
 			options.OpenTelemetry.TrackConnections = TrackLevel.Normal;

@@ -10,6 +10,7 @@ using Excos.Platform.WebApiHost.Telemetry;
 using Marten;
 using Marten.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using Oakton;
 using Weasel.Core;
 using Wolverine;
@@ -32,18 +33,13 @@ builder.Services.ConfigureHttpClientDefaults(http =>
 	http.AddServiceDiscovery();
 });
 
+// Generic Marten Store needed for some dependencies and configuring Wolverine correctly
 builder.Services.AddMarten(options =>
 {
-	options.Connection(builder.Configuration.GetConnectionString("postgres") ?? string.Empty);
-	options.OpenTelemetry.TrackConnections = TrackLevel.Normal;
-
-	options.UseSystemTextJsonForSerialization();
-
-	// FUTURE: In the future we may want to turn this off in production and execute migrations in a separate process
-	options.AutoCreateSchemaObjects = AutoCreate.All;
+	options.Policies.PartitionMultiTenantedDocumentsUsingMartenManagement("tenants");
+	options.MultiTenantedWithSingleServer(builder.Configuration.GetConnectionString("postgres") ?? string.Empty);
 })
-	.IntegrateWithWolverine()
-	.UseLightweightSessions();
+	.IntegrateWithWolverine();
 
 builder.AddExcosMartenStore<ICounterStore>("counters");
 
