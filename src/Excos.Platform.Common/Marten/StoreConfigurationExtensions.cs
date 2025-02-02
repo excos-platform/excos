@@ -19,6 +19,14 @@ namespace Excos.Platform.Common.Marten;
 
 public static class StoreConfigurationExtensions
 {
+	/// <summary>
+	/// Adds a Marten store for the custom <typeparamref name="TStore"/> interface and prepares it to work with Wolverine
+	/// with multi-tenancy support.
+	/// </summary>
+	/// <typeparam name="TStore">Custom data store interface</typeparam>
+	/// <param name="build">Host builder</param>
+	/// <param name="dbSchemaName">Database schema name for the store, also used for wolverine subscriptions and keyed services.</param>
+	/// <param name="configureOptions">Extra configuration</param>
 	public static IHostApplicationBuilder AddExcosMartenStore<TStore>(
 		this IHostApplicationBuilder builder,
 		string dbSchemaName,
@@ -36,12 +44,12 @@ public static class StoreConfigurationExtensions
 	/// Adds a Marten store for the custom <typeparamref name="TStore"/> interface and prepares it to work with Wolverine
 	/// with multi-tenancy support.
 	/// </summary>
-	/// <typeparam name="TStore"></typeparam>
-	/// <param name="services"></param>
-	/// <param name="hostEnvironment"></param>
-	/// <param name="configuration"></param>
-	/// <param name="dbSchemaName"></param>
-	/// <param name="configureOptions"></param>
+	/// <typeparam name="TStore">Custom data store interface</typeparam>
+	/// <param name="services">Dependency injection services collection</param>
+	/// <param name="hostEnvironment">Environment</param>
+	/// <param name="configuration">Configuration</param>
+	/// <param name="dbSchemaName">Database schema name for the store, also used for wolverine subscriptions and keyed services.</param>
+	/// <param name="configureOptions">Extra configuration</param>
 	/// <returns></returns>
 	public static IServiceCollection AddExcosMartenStore<TStore>(
 		this IServiceCollection services,

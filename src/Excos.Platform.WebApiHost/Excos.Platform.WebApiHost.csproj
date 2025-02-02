@@ -18,6 +18,10 @@
 		<PackageReference Include="WolverineFx.Marten" />
 	</ItemGroup>
 
+	<ItemGroup>
+		<ProjectReference Include="..\Excos.Platform.Common\Excos.Platform.Common.csproj" />
+	</ItemGroup>
+
 	<PropertyGroup>
 		<ContainerRepository>excos</ContainerRepository>
 		<ContainerImageTags>latest;$(InformationalVersion)</ContainerImageTags>
@@ -25,9 +29,6 @@
 	</PropertyGroup>
 	<ItemGroup>
 		<ContainerPort Include="80" Type="tcp" />
-	</ItemGroup>
-	<ItemGroup>
-	  <ProjectReference Include="..\Excos.Platform.Common\Excos.Platform.Common.csproj" />
 	</ItemGroup>
 
 </Project>

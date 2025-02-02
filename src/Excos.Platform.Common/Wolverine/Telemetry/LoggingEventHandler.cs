@@ -13,12 +13,20 @@ namespace Excos.Platform.Common.Wolverine.Telemetry
 {
 	public static class LoggingEventHandlerExtensions
 	{
+		/// <summary>
+		/// Add an event handler which will log event details.
+		/// </summary>
+		/// <typeparam name="T">Event type</typeparam>
 		public static HandlerDiscovery AddLogger<T>(this HandlerDiscovery discovery)
 		{
 			return discovery.IncludeType(typeof(LoggingEventHandler<T>));
 		}
 	}
 
+	/// <summary>
+	/// An event hadnler which logs event details.
+	/// </summary>
+	/// <typeparam name="T">Event type</typeparam>
 	public static class LoggingEventHandler<T>
 	{
 		public static void Handle(T message, Envelope envelope, ILogger<T> logger, PrivacyValueRedactor redactor)
@@ -32,7 +40,6 @@ namespace Excos.Platform.Common.Wolverine.Telemetry
 			{
 				{ "EnvelopeId", envelope.Id },
 				{ "ConversationId", envelope.ConversationId == Guid.Empty ? null : envelope.ConversationId },
-				// { "CorrelationId", envelope.CorrelationId }, this is just trace id so it's stamped on logs anyways
 				{ "TenantId", envelope.TenantId },
 				{ "Source", envelope.Source },
 				{ "SentAt", envelope.SentAt },
