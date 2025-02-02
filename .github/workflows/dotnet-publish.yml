@@ -19,10 +19,10 @@ jobs:
       with:
         fetch-depth: 0 # full checkout
     - name: Install GitVersion
-      uses: gittools/actions/gitversion/setup@v3.1.11
+      uses: gittools/actions/gitversion/setup@v4
     - name: Determine Version
       id: version # step id used as reference for output values
-      uses: gittools/actions/gitversion/execute@v3.1.11
+      uses: gittools/actions/gitversion/execute@v4
 
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
