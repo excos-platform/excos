@@ -91,7 +91,7 @@ internal record class PrivacyValueDescriptor(MemberInfo Source, PrivacyValueReda
 
 	internal string GetValue(object evnt)
 	{
-		switch(this.Source)
+		switch (this.Source)
 		{
 			case PropertyInfo propertyInfo:
 				return propertyInfo.GetValue(evnt)?.ToString() ?? string.Empty;

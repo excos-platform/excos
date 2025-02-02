@@ -33,8 +33,8 @@ internal class CustomMartenLogger(PrivacyValueRedactor Redactor, ILogger Inner) 
 
 	public void LogFailure(NpgsqlCommand command, Exception ex)
 	{
-		var message = "Marten encountered an exception executing \n{SQL}\n{PARAMS}";
-		var parameters = command.Parameters.OfType<NpgsqlParameter>()
+		string message = "Marten encountered an exception executing \n{SQL}\n{PARAMS}";
+		string parameters = command.Parameters.OfType<NpgsqlParameter>()
 			.Select(p => $"  {p.ParameterName}: {p.Value}")
 			.Join(Environment.NewLine);
 		Inner.LogError(ex, message, command.CommandText, parameters);
@@ -42,11 +42,11 @@ internal class CustomMartenLogger(PrivacyValueRedactor Redactor, ILogger Inner) 
 
 	public void LogFailure(NpgsqlBatch batch, Exception ex)
 	{
-		var message = "Marten encountered an exception executing \n{SQL}\n{PARAMS}";
+		string message = "Marten encountered an exception executing \n{SQL}\n{PARAMS}";
 
-		foreach (var command in batch.BatchCommands)
+		foreach (System.Data.Common.DbBatchCommand command in batch.BatchCommands)
 		{
-			var parameters = command.Parameters.OfType<NpgsqlParameter>()
+			string parameters = command.Parameters.OfType<NpgsqlParameter>()
 				.Select(p => $"  {p.ParameterName}: {p.Value}")
 				.Join(Environment.NewLine);
 			Inner.LogError(ex, message, command.CommandText, parameters);
