@@ -23,17 +23,17 @@ module Tests =
         use! app = AppHost.StartAsync()
         let! client = app.GetWebApiClientAsync()
 
-        let! response = client.GetAsync("/counter/my-counter")
+        let! response = client.GetAsync("/counter/my-counter?tenantId=test")
         let! content = response.Content.ReadAsStringAsync()
  
         Assert.Equal("0", content)
 
         use content = new StringContent("")
-        let! response = client.PostAsync("/counter/my-counter/increase", content)
+        let! response = client.PostAsync("/counter/my-counter/increase?tenantId=test", content)
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode)
 
-        let! response = client.GetAsync("/counter/my-counter")
+        let! response = client.GetAsync("/counter/my-counter?tenantId=test")
         let! content = response.Content.ReadAsStringAsync()
 
         Assert.Equal("1", content)
