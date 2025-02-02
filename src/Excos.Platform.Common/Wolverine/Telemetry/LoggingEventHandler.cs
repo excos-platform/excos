@@ -2,12 +2,9 @@
 // Licensed under the GNU Affero General Public License v3.
 
 using System.Diagnostics;
-using System.Diagnostics.Tracing;
 using System.Text.Json;
 using Excos.Platform.Common.Privacy.Redaction;
 using JasperFx.Core.Reflection;
-using Marten.Events;
-using Microsoft.Extensions.Compliance.Redaction;
 using Microsoft.Extensions.Logging;
 using Wolverine;
 using Wolverine.Configuration;

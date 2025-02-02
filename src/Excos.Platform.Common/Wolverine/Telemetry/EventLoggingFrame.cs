@@ -13,6 +13,9 @@ using Wolverine.Configuration;
 
 namespace Excos.Platform.Common.Wolverine.Telemetry;
 
+/// <summary>
+/// Wolverine event handler frame which logs event fields into the current activity.
+/// </summary>
 internal class EventLoggingFrame : SyncFrame
 {
 	private readonly Type inputType;
@@ -49,11 +52,6 @@ internal class EventLoggingFrame : SyncFrame
 		writer.WriteLine($"if ({typeof(Activity).FullNameInCode()}.{nameof(Activity.Current)} != null) {{");
 		writer.IndentionLevel++;
 		writer.WriteLine($"var eventTags = new {typeof(ActivityTagsCollection).FullNameInCode()}();");
-		// No point in logging those as they are already present in the activity
-		//writer.WriteLine($"eventTags.{nameof(ActivityTagsCollection.Add)}(\"EnvelopeId\", {this.envelope!.Usage}.{nameof(Envelope.Id)});");
-		//writer.WriteLine($"eventTags.{nameof(ActivityTagsCollection.Add)}(\"{nameof(Envelope.ConversationId)}\", {this.envelope!.Usage}.{nameof(Envelope.ConversationId)});");
-		//writer.WriteLine($"eventTags.{nameof(ActivityTagsCollection.Add)}(\"{nameof(Envelope.CorrelationId)}\", {this.envelope!.Usage}.{nameof(Envelope.CorrelationId)});");
-		//writer.WriteLine($"eventTags.{nameof(ActivityTagsCollection.Add)}(\"{nameof(Envelope.TenantId)}\", {this.envelope!.Usage}.{nameof(Envelope.TenantId)});");
 
 		foreach (PrivacyValueDescriptor member in this.members)
 			writer.WriteLine(

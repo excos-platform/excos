@@ -11,6 +11,11 @@ using Npgsql;
 
 namespace Excos.Platform.Common.Marten.Telemetry;
 
+/// <summary>
+/// Custom Marten logger which populates the current activity with the event data.
+/// </summary>
+/// <param name="Redactor">Privacy redactor.</param>
+/// <param name="Inner">Logger for error messages.</param>
 internal class CustomMartenLogger(PrivacyValueRedactor Redactor, ILogger Inner) : IMartenLogger, IMartenSessionLogger
 {
 	public IMartenSessionLogger StartSession(IQuerySession session) => this;

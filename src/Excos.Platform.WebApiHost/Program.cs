@@ -3,16 +3,12 @@
 
 using Excos.Platform.Common.Marten;
 using Excos.Platform.Common.Privacy;
-using Excos.Platform.Common.Privacy.Redaction;
 using Excos.Platform.Common.Wolverine.Telemetry;
 using Excos.Platform.WebApiHost.Healthchecks;
 using Excos.Platform.WebApiHost.Telemetry;
 using Marten;
-using Marten.Services;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
 using Oakton;
-using Weasel.Core;
 using Wolverine;
 using Wolverine.Marten;
 
@@ -42,8 +38,6 @@ builder.Services.AddMarten(options =>
 	.IntegrateWithWolverine();
 
 builder.AddExcosMartenStore<ICounterStore>("counters");
-
-builder.Services.AddSingleton<PrivacyValueRedactor>();
 
 builder.Services.AddWolverine(options =>
 {
@@ -94,7 +88,8 @@ catch (Exception ex)
 
 	return 1;
 }
-
+//---------
+// TEST CODE BELOW
 static void MapApplicationEndpoints(WebApplication app)
 {
 	app.MapGet("/", () => "Hello World!");

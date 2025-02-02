@@ -4,7 +4,7 @@
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 
-namespace Excos.Platform.WebApiHost.Utils
+namespace Excos.Platform.Common.Utils
 {
 	public static class GuidExtensions
 	{
@@ -46,7 +46,7 @@ namespace Excos.Platform.WebApiHost.Utils
 			return new Guid(newGuid);
 		}
 
-		internal static void SwapByteOrder(Span<byte> guid)
+		private static void SwapByteOrder(Span<byte> guid)
 		{
 			SwapBytes(guid, 0, 3);
 			SwapBytes(guid, 1, 2);

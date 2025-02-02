@@ -3,13 +3,13 @@
 
 using Excos.Platform.Common.Marten.Telemetry;
 using Excos.Platform.Common.Privacy.Redaction;
-using JasperFx.Core;
 using Marten;
 using Marten.Events;
 using Marten.Events.Daemon.Resiliency;
 using Marten.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Weasel.Core;
@@ -32,6 +32,17 @@ public static class StoreConfigurationExtensions
 		return builder;
 	}
 
+	/// <summary>
+	/// Adds a Marten store for the custom <typeparamref name="TStore"/> interface and prepares it to work with Wolverine
+	/// with multi-tenancy support.
+	/// </summary>
+	/// <typeparam name="TStore"></typeparam>
+	/// <param name="services"></param>
+	/// <param name="hostEnvironment"></param>
+	/// <param name="configuration"></param>
+	/// <param name="dbSchemaName"></param>
+	/// <param name="configureOptions"></param>
+	/// <returns></returns>
 	public static IServiceCollection AddExcosMartenStore<TStore>(
 		this IServiceCollection services,
 		IHostEnvironment hostEnvironment,
@@ -41,6 +52,8 @@ public static class StoreConfigurationExtensions
 		where TStore : class, IDocumentStore
 	{
 		ArgumentException.ThrowIfNullOrWhiteSpace(dbSchemaName, nameof(dbSchemaName));
+
+		services.TryAddSingleton<PrivacyValueRedactor>();
 
 		services.AddMartenStore<TStore>(provider =>
 		{
