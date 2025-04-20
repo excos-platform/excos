@@ -18,23 +18,25 @@ jobs:
       uses: actions/checkout@v4
       with:
         fetch-depth: 0 # full checkout
-    - name: Install GitVersion
-      uses: gittools/actions/gitversion/setup@v3.0.0
-    - name: Determine Version
-      id: version # step id used as reference for output values
-      uses: gittools/actions/gitversion/execute@v3.0.0
-
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
+
+    - name: Install GitVersion
+      uses: gittools/actions/gitversion/setup@v3.2
+    - name: Determine Version
+      id: version # step id used as reference for output values
+      uses: gittools/actions/gitversion/execute@v3.2
+
     - name: Install .NET Aspire workload
       run: dotnet workload install aspire
     
     - name: .NET Publish
+      # trimming doesn't play well with Wolverine
       run: |
         dotnet publish \
         --os linux --arch x64 -c Release \
         --self-contained true \
-        -p:PublishTrimmed=true \
+        -p:PublishTrimmed=false \
         -p:PublishProfile=DefaultContainer \
         -p:Version=${{ steps.version.outputs.assemblySemVer }} \
         -p:InformationalVersion=${{ steps.version.outputs.semVer }} \

@@ -5,6 +5,12 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Staging
       ASPNETCORE_URLS: http://excos:80/
+      ConnectionStrings__postgres: "Host=postgres;Port=5432;Database=excos;Username=docker;Password=docker"
+    depends_on:
+      postgres:
+        condition: service_healthy
+        restart: true
+
   proxy:
     image: steveltn/https-portal
     ports:
@@ -29,8 +35,27 @@ services:
       WEBSOCKET: 'true'
       CLIENT_MAX_BODY_SIZE: '0'
     networks: [ excos_inner ]
+    depends_on:
+      excos:
+        condition: service_started
+  
+  postgres:
+    image: postgres:13
+    networks: [ excos_inner ]
+    volumes:
+    - pgdata:/var/lib/postgresql/data
+    environment:
+        POSTGRES_USER: docker
+        POSTGRES_PASSWORD: docker
+        POSTGRES_DB: excos
+    healthcheck:
+        test: /usr/bin/pg_isready -U docker -d excos
+        interval: 5s
+        timeout: 10s
+        retries: 20
 
 volumes:
   proxy-data:
+  pgdata:  
 networks:
   excos_inner:

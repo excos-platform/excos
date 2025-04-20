@@ -1,8 +1,16 @@
 // Copyright (c) Marian Dziubiak.
 // Licensed under the GNU Affero General Public License v3.
 
+using Excos.Platform.Common.Marten;
+using Excos.Platform.Common.Privacy;
+using Excos.Platform.Common.Wolverine.Telemetry;
 using Excos.Platform.WebApiHost.Healthchecks;
 using Excos.Platform.WebApiHost.Telemetry;
+using Marten;
+using Microsoft.AspNetCore.Mvc;
+using Oakton;
+using Wolverine;
+using Wolverine.Marten;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
@@ -21,9 +29,118 @@ builder.Services.ConfigureHttpClientDefaults(http =>
 	http.AddServiceDiscovery();
 });
 
+// Generic Marten Store needed for some dependencies and configuring Wolverine correctly
+builder.Services.AddMarten(options =>
+{
+	options.Policies.PartitionMultiTenantedDocumentsUsingMartenManagement("tenants");
+	options.MultiTenantedWithSingleServer(builder.Configuration.GetConnectionString("postgres") ?? string.Empty);
+	options.DatabaseSchemaName = "excos";
+})
+	.IntegrateWithWolverine();
+
+builder.AddExcosMartenStore<ICounterStore>("counters");
+
+builder.Services.AddWolverine(options =>
+{
+	options.Policies.Add<EventLoggingPolicy>();
+
+	options.Policies.UseDurableLocalQueues();
+
+	options.Policies.AutoApplyTransactions();
+
+	options.Discovery
+		.AddLogger<IncreaseCounterCommand>()
+		.AddLogger<CounterIncreased>();
+});
+
 WebApplication app = builder.Build();
 
-app.MapGet("/", () => "Hello World!");
-app.MapDevHealthCheckEndpoints();
+// these are used by health check endpoints
+app.UseRequestTimeouts();
+app.UseOutputCache();
 
-app.Run();
+MapApplicationEndpoints(app);
+app.MapHealthCheckEndpoints();
+
+try
+{
+	// In order to observe startup exceptions (such as when resolving an IHostedService)
+	// we will be running the host on its own outside of development.
+	// Oakton logs exception to console and does not rethrow it.
+	if (app.Environment.IsDevelopment())
+	{
+		return await app.RunOaktonCommands(args);
+	}
+
+	await app.RunAsync();
+	return 0;
+}
+catch (Exception ex)
+{
+	Console.Error.WriteLine(ex.ToString());
+
+	try
+	{
+		// Try to log the exception via open telemetry
+		HostApplicationBuilder emergencyHostBuilder = Host.CreateEmptyApplicationBuilder(new());
+		emergencyHostBuilder.ConfigureOpenTelemetry();
+
+		using (IHost emergencyHost = emergencyHostBuilder.Build())
+		{
+			emergencyHost.Services.GetRequiredService<ILogger<Program>>().LogCritical(ex, "Host terminated unexpectedly");
+		}
+	}
+	finally { }
+
+	return 1;
+}
+//---------
+// TEST CODE BELOW
+static void MapApplicationEndpoints(WebApplication app)
+{
+	app.MapGet("/", () => "Hello World!");
+	app.MapGet("/counter/{id}", async ([FromRoute] string id, [FromQuery] string? tenantId, ICounterStore store) =>
+	{
+		IDocumentSession session = tenantId != null ? store.LightweightSession(tenantId) : store.LightweightSession();
+		Counter? counter = await session.Events.AggregateStreamAsync<Counter>(id);
+		return counter?.Value ?? 0;
+	});
+	app.MapPost("/counter/{id}/increase", async ([FromRoute] string id, [FromQuery] string? tenantId, IMessageBus bus) =>
+	{
+		if (tenantId != null)
+		{
+			await bus.InvokeForTenantAsync(tenantId, new IncreaseCounterCommand(id));
+		}
+		else
+		{
+			await bus.InvokeAsync(new IncreaseCounterCommand(id));
+		}
+		return "Counter increased";
+	});
+}
+
+public interface ICounterStore : IDocumentStore;
+public record IncreaseCounterCommand([property: UPI] string CounterId);
+public record CounterIncreased([property: UPI] string CounterId);
+
+public class Counter
+{
+	[UPI]
+	public string Id { get; set; } = default!;
+	public int Value { get; set; }
+
+	public void Apply(CounterIncreased _)
+	{
+		this.Value++;
+	}
+}
+
+[MartenStore(typeof(ICounterStore))]
+public static class IncreaseCounterCommandHandler
+{
+	[AggregateHandler(AggregateType = typeof(Counter))]
+	public static CounterIncreased Handle(IncreaseCounterCommand command)
+	{
+		return new CounterIncreased(command.CounterId);
+	}
+}

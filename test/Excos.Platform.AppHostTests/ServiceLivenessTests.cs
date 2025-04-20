@@ -1,6 +1,8 @@
 // Copyright (c) Marian Dziubiak.
 // Licensed under the GNU Affero General Public License v3.
 
+using Aspire.Hosting;
+
 namespace Excos.Platform.AppHostTests.Tests;
 
 public class ServiceLivenessTests

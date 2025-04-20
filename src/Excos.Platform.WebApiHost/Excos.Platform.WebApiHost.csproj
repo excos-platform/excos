@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
 	<PropertyGroup>
-		<TargetFramework>net8.0</TargetFramework>
+		<TargetFramework>net9.0</TargetFramework>
 		<Nullable>enable</Nullable>
 		<ImplicitUsings>enable</ImplicitUsings>
 	</PropertyGroup>
@@ -14,15 +14,21 @@
 		<PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" />
 		<PackageReference Include="OpenTelemetry.Instrumentation.Http" />
 		<PackageReference Include="OpenTelemetry.Instrumentation.Runtime" />
+		<PackageReference Include="WolverineFx" />
+		<PackageReference Include="WolverineFx.Marten" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\Excos.Platform.Common\Excos.Platform.Common.csproj" />
 	</ItemGroup>
 
 	<PropertyGroup>
 		<ContainerRepository>excos</ContainerRepository>
 		<ContainerImageTags>latest;$(InformationalVersion)</ContainerImageTags>
-		<ContainerBaseImage>mcr.microsoft.com/dotnet/runtime-deps:8.0-noble-chiseled</ContainerBaseImage>
-  	</PropertyGroup>
-  	<ItemGroup>
-    	<ContainerPort Include="80" Type="tcp" />
-  	</ItemGroup>
+		<ContainerBaseImage>mcr.microsoft.com/dotnet/runtime-deps:9.0-noble-chiseled</ContainerBaseImage>
+	</PropertyGroup>
+	<ItemGroup>
+		<ContainerPort Include="80" Type="tcp" />
+	</ItemGroup>
 
 </Project>
