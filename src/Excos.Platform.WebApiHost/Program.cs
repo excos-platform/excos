@@ -55,7 +55,12 @@ builder.Services.AddWolverine(options =>
 
 WebApplication app = builder.Build();
 
+// these are used by health check endpoints
+app.UseRequestTimeouts();
+app.UseOutputCache();
+
 MapApplicationEndpoints(app);
+app.MapHealthCheckEndpoints();
 
 try
 {
@@ -112,7 +117,6 @@ static void MapApplicationEndpoints(WebApplication app)
 		}
 		return "Counter increased";
 	});
-	app.MapDevHealthCheckEndpoints();
 }
 
 public interface ICounterStore : IDocumentStore;
