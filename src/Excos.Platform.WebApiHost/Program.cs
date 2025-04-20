@@ -34,6 +34,7 @@ builder.Services.AddMarten(options =>
 {
 	options.Policies.PartitionMultiTenantedDocumentsUsingMartenManagement("tenants");
 	options.MultiTenantedWithSingleServer(builder.Configuration.GetConnectionString("postgres") ?? string.Empty);
+	options.DatabaseSchemaName = "excos";
 })
 	.IntegrateWithWolverine();
 
