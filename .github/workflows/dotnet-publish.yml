@@ -31,11 +31,12 @@ jobs:
       run: dotnet workload install aspire
     
     - name: .NET Publish
+      # trimming doesn't play well with Wolverine
       run: |
         dotnet publish \
         --os linux --arch x64 -c Release \
         --self-contained true \
-        -p:PublishTrimmed=true \
+        -p:PublishTrimmed=false \
         -p:PublishProfile=DefaultContainer \
         -p:Version=${{ steps.version.outputs.assemblySemVer }} \
         -p:InformationalVersion=${{ steps.version.outputs.semVer }} \
