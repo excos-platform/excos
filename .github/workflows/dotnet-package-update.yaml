@@ -24,8 +24,9 @@ jobs:
     - name: Install dotnet-outdated
       run: dotnet tool install --global dotnet-outdated-tool
     - name: Run dotnet-outdated
-      run: dotnet outdated --upgrade -o upgrade.md -of Markdown
+      run: dotnet outdated --no-restore --upgrade -o upgrade.md -of Markdown
     - name: Output to summary
+      if: always() # run even if the previous step fails
       run: |
         if test -f upgrade.md; then
           cat upgrade.md >> $GITHUB_STEP_SUMMARY
