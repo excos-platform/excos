@@ -5,7 +5,9 @@ using Projects;
 
 IDistributedApplicationBuilder builder = DistributedApplication.CreateBuilder(args);
 
-IResourceBuilder<PostgresServerResource> postgres = builder.AddPostgres("postgres");
+IResourceBuilder<ParameterResource> postgresUserName = builder.AddParameter("dbUser");
+IResourceBuilder<ParameterResource> postgresPassword = builder.AddParameter("dbPassword", secret: true);
+IResourceBuilder<PostgresServerResource> postgres = builder.AddPostgres("postgres", postgresUserName, postgresPassword);
 
 builder.AddProject<Excos_Platform_WebApiHost>("WebApiHost")
 	.WaitFor(postgres)
