@@ -6,6 +6,7 @@ using Asp.Versioning.OData;
 using Excos.Platform.Common.Privacy;
 using Excos.Platform.Common.Wolverine.Telemetry;
 using Excos.Platform.WebApiHost.Healthchecks;
+using Excos.Platform.WebApiHost.OpenApi;
 using Excos.Platform.WebApiHost.Telemetry;
 using Marten;
 using Marten.Events;
@@ -128,9 +129,14 @@ builder.Services.AddOpenApiDocument(document =>
 {
 	document.DocumentName = "v1";
 	document.ApiGroupNames = ["v1"];
+	document.OperationProcessors.Add(new ODataOperationProcessor());
 });
 
 WebApplication app = builder.Build();
+
+// Generate ProblemDetails for unhandled exceptions and non-successful status codes
+app.UseExceptionHandler();
+app.UseStatusCodePages();
 
 // these are used by health check endpoints
 app.UseRequestTimeouts();
@@ -214,7 +220,7 @@ public class CountersController : ODataController
 
 	[HttpGet]
 	[EnableQuery]
-	[ProducesResponseType(typeof(ODataValue<Counter>), StatusCodes.Status200OK)]
+	[ProducesResponseType(typeof(Counter), StatusCodes.Status200OK)]
 	[ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
 	public async Task<IActionResult> Get(string key)
 	{
@@ -243,11 +249,11 @@ public class Counter
 {
 	[UPI]
 	public string Id { get; set; } = default!;
-	public int Value { get; set; }
+	public int Value { get; set; } = 0;
 
 	public void Apply(CounterIncreased _)
 	{
-		this.Value++;
+		this.Value += 1;
 	}
 }
 
