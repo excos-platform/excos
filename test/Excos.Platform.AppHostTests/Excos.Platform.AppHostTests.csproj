@@ -14,9 +14,9 @@
 				<Value>namespace MyProject { internal static class ProjectInfo { public const string Directory = @"$(MSBuildProjectDirectory)"; } }</Value>
 			</ProjectInfoLines>
 		</ItemGroup>
-		<WriteLinesToFile File="$(IntermediateOutputBase)/Generated/ProjectInfo.cs" Lines="@(ProjectInfoLines->'%(Value)')" Overwrite="true" />
+		<WriteLinesToFile File="$(BaseIntermediateOutpath)/Generated/ProjectInfo.cs" Lines="@(ProjectInfoLines->'%(Value)')" Overwrite="true" />
 		<ItemGroup>
-			<Compile Include="$(IntermediateOutputBase)/Generated/ProjectInfo.cs" />
+			<Compile Include="$(BaseIntermediateOutpath)/Generated/ProjectInfo.cs" />
 		</ItemGroup>
 	</Target>
 
