@@ -5,13 +5,13 @@
 	<ItemGroup Label="Host">
 		<PackageVersion Include="Asp.Versioning.OData" Version="8.2.0" />
 		<PackageVersion Include="Asp.Versioning.OData.ApiExplorer" Version="8.2.0" />
-		<PackageVersion Include="Aspire.Hosting.AppHost" Version="9.2.0" />
-		<PackageVersion Include="Aspire.Hosting.PostgreSQL" Version="9.2.0" />
+		<PackageVersion Include="Aspire.Hosting.AppHost" Version="9.2.1" />
+		<PackageVersion Include="Aspire.Hosting.PostgreSQL" Version="9.2.1" />
 		<PackageVersion Include="Microsoft.AspNetCore.OData" Version="9.3.0" />
 		<PackageVersion Include="Microsoft.Extensions.Compliance.Redaction" Version="9.4.0" />
 		<PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.4" />
 		<PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="9.4.0" />
-		<PackageVersion Include="Microsoft.Extensions.ServiceDiscovery" Version="9.2.0" />
+		<PackageVersion Include="Microsoft.Extensions.ServiceDiscovery" Version="9.2.1" />
 		<PackageVersion Include="NSwag.AspNetCore" Version="14.3.0" />
 		<PackageVersion Include="NSwag.MSBuild" Version="14.4.0" />
 		<PackageVersion Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.11.2" />
@@ -23,7 +23,7 @@
 		<PackageVersion Include="WolverineFx.Marten" Version="3.12.2" />
 	</ItemGroup>
 	<ItemGroup Label="Testing">
-		<PackageVersion Include="Aspire.Hosting.Testing" Version="9.2.0" />
+		<PackageVersion Include="Aspire.Hosting.Testing" Version="9.2.1" />
 		<PackageVersion Include="coverlet.collector" Version="6.0.4" />
 		<PackageVersion Include="FSharp.Core" Version="9.0.202" />
 		<PackageVersion Include="JunitXml.TestLogger" Version="6.1.0" />
