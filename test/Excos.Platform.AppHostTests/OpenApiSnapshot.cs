@@ -1,12 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
-using System.Text.Json;
+﻿using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Threading.Tasks;
 using Aspire.Hosting;
 using LimeFlight.OpenAPI.Diff;
 using LimeFlight.OpenAPI.Diff.BusinessObjects;
@@ -14,7 +7,6 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.OpenApi.Models;
 using Microsoft.OpenApi.Readers;
 using MyProject;
-using Xunit;
 
 namespace Excos.Platform.AppHostTests;
 
@@ -44,7 +36,7 @@ public static class OpenApiSnapshot
 	}
 
 	[Theory]
-	[InlineData("v1")]
+	[InlineData("V1")]
 	public static async Task OpenApiSpecIsBackwardsCompatible(string version)
 	{
 		string currentOpenApi = await FetchOpenApiFileAsync(version);
