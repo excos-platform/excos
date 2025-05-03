@@ -1,9 +1,8 @@
 namespace Excos.Platform.WebApiHostTests
 
-open System.Net
-open System.Net.Http
 open Xunit
 open Excos.Platform.AppHostTests
+open Excos.Platform.ApiClient.V1
 
 module Tests =
 
@@ -21,20 +20,25 @@ module Tests =
     [<Fact>]
     let ``Api /counter performs increases over managed state`` () = task {
         use! app = AppHost.StartAsync()
-        let! client = app.GetWebApiClientAsync()
+        let! httpClient = app.GetWebApiClientAsync()
+        let client = CountersClient(httpClient)
+        client.ReadResponseAsString <- true // for debugging
+        let counterRef = "'my-counter'"
 
-        let! response = client.GetAsync("/counter/my-counter?tenantId=test")
-        let! content = response.Content.ReadAsStringAsync()
+        try
+            let! _ = client.GetByKeyAsync(counterRef)
+            Assert.Fail("Expected exception not thrown: 404 NotFound")
+        with
+        | :? ExcosApiException as ex ->
+            Assert.Equal(404, ex.StatusCode)
  
-        Assert.Equal("0", content)
+        let! response = client.IncreaseByKeyAsync(counterRef)
+        Assert.Equal("Counter increased", response.Value)
 
-        use content = new StringContent("")
-        let! response = client.PostAsync("/counter/my-counter/increase?tenantId=test", content)
+        let! response = client.GetByKeyAsync(counterRef)
+        Assert.Equal(1, response.Value)
 
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode)
-
-        let! response = client.GetAsync("/counter/my-counter?tenantId=test")
-        let! content = response.Content.ReadAsStringAsync()
-
-        Assert.Equal("1", content)
+        let! _ = client.IncreaseByKeyAsync(counterRef)
+        let! response = client.GetByKeyAsync(counterRef)
+        Assert.Equal(2, response.Value)
     }

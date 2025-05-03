@@ -1,0 +1,32 @@
+﻿namespace LimeFlight.OpenAPI.Diff.Enums
+{
+	public enum ChangedElementTypeEnum
+	{
+		OpenApi,
+		Operation,
+		RequestBody,
+		Path,
+		Content,
+		Response,
+		Request,
+		Parameter,
+		Schema,
+		OneOf,
+		AnyOf,
+		AllOf,
+		Header,
+		SecurityRequirement,
+		SecurityScheme,
+		SecuritySchemeScope,
+		AuthFlow,
+		Metadata,
+		MediaType,
+		WriteOnly,
+		ReadOnly,
+		MinLength,
+		MaxLength,
+		Required,
+		Extension,
+		Enum
+	}
+}

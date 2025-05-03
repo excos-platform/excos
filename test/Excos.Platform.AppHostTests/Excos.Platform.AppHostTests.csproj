@@ -8,13 +8,30 @@
 		<IsTestProject>true</IsTestProject>
 	</PropertyGroup>
 
+	<Target Name="GenerateProjectInfo" BeforeTargets="BeforeCompile">
+		<ItemGroup>
+			<ProjectInfoLines Include=".">
+				<Value>namespace MyProject { internal static class ProjectInfo { public const string Directory = @"$(MSBuildProjectDirectory)"; } }</Value>
+			</ProjectInfoLines>
+		</ItemGroup>
+		<WriteLinesToFile File="$(IntermediateOutputPath)/Generated/ProjectInfo.cs" Lines="@(ProjectInfoLines->'%(Value)')" Overwrite="true" />
+		<ItemGroup>
+			<Compile Include="$(IntermediateOutputPath)/Generated/ProjectInfo.cs" />
+		</ItemGroup>
+	</Target>
+
 	<ItemGroup>
 		<PackageReference Include="Aspire.Hosting.Testing" />
 		<PackageReference Include="coverlet.collector" />
-		<PackageReference Include="JunitXml.TestLogger"  />
+		<PackageReference Include="JunitXml.TestLogger" />
 		<PackageReference Include="Microsoft.NET.Test.Sdk" />
 		<PackageReference Include="xunit" />
 		<PackageReference Include="xunit.runner.visualstudio" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<!--<PackageReference Include="LimeFlight.OpenAPI.Diff" />-->
+		<ProjectReference Include="..\LimeFlight.OpenAPI.Diff\LimeFlight.OpenAPI.Diff.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>
