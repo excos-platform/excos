@@ -11,9 +11,9 @@ namespace LimeFlight.OpenAPI.Diff.Utils
 		{
 			var endpoints = new List<T>();
 			if (dict == null) return endpoints;
-			foreach (var (key, value) in dict)
+			foreach ((OperationType key, OpenApiOperation value) in dict)
 			{
-				var endpoint = ConvertToEndpoint<T>(pathUrl, key, value);
+				T endpoint = ConvertToEndpoint<T>(pathUrl, key, value);
 				endpoints.Add(endpoint);
 			}
 
@@ -39,10 +39,10 @@ namespace LimeFlight.OpenAPI.Diff.Utils
 			var endpoints = new List<T>();
 			if (dict == null) return endpoints;
 
-			foreach (var (key, value) in dict)
+			foreach ((string key, OpenApiPathItem value) in dict)
 			{
-				var operationMap = value.Operations;
-				foreach (var (operationType, openApiOperation) in operationMap)
+				IDictionary<OperationType, OpenApiOperation> operationMap = value.Operations;
+				foreach ((OperationType operationType, OpenApiOperation openApiOperation) in operationMap)
 				{
 					var endpoint = new T
 					{

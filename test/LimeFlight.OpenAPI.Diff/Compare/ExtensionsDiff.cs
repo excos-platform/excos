@@ -60,25 +60,25 @@ namespace LimeFlight.OpenAPI.Diff.Compare
 			right = ((Dictionary<string, IOpenApiExtension>)right).CopyDictionary();
 			var changedExtensions = new ChangedExtensionsBO((Dictionary<string, IOpenApiExtension>)left,
 				((Dictionary<string, IOpenApiExtension>)right).CopyDictionary(), context);
-			foreach (var (key, value) in left)
+			foreach ((string key, IOpenApiExtension value) in left)
 				if (right.ContainsKey(key))
 				{
-					var rightValue = right[key];
+					IOpenApiExtension rightValue = right[key];
 					right.Remove(key);
-					var changed = this.ExecuteExtensionDiff(key, ChangeBO<object>.Changed(value, rightValue), context);
+					ChangedBO changed = this.ExecuteExtensionDiff(key, ChangeBO<object>.Changed(value, rightValue), context);
 					if (changed?.IsDifferent() ?? false)
 						changedExtensions.Changed.Add(key, changed);
 				}
 				else
 				{
-					var changed = this.ExecuteExtensionDiff(key, ChangeBO<object>.Removed(value), context);
+					ChangedBO changed = this.ExecuteExtensionDiff(key, ChangeBO<object>.Removed(value), context);
 					if (changed?.IsDifferent() ?? false)
 						changedExtensions.Missing.Add(key, changed);
 				}
 
-			foreach (var (key, value) in right)
+			foreach ((string key, IOpenApiExtension value) in right)
 			{
-				var changed = this.ExecuteExtensionDiff(key, ChangeBO<object>.Added(value), context);
+				ChangedBO changed = this.ExecuteExtensionDiff(key, ChangeBO<object>.Added(value), context);
 				if (changed?.IsDifferent() ?? false)
 					changedExtensions.Increased.Add(key, changed);
 			}

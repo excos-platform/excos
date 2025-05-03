@@ -76,8 +76,8 @@ namespace LimeFlight.OpenAPI.Diff.BusinessObjects
 			)
 				return new DiffResultBO(DiffResultEnum.NoChanges);
 
-			var compatibleForRequest = this.OldSchema != null || this.NewSchema == null;
-			var compatibleForResponse =
+			bool compatibleForRequest = this.OldSchema != null || this.NewSchema == null;
+			bool compatibleForResponse =
 				this.MissingProperties.IsNullOrEmpty() && (this.OldSchema == null || this.NewSchema != null);
 
 			if ((this.Context.IsRequest && compatibleForRequest
@@ -90,9 +90,9 @@ namespace LimeFlight.OpenAPI.Diff.BusinessObjects
 
 		protected override List<ChangedInfoBO> GetCoreChanges()
 		{
-			var returnList = this.GetCoreChangeInfosOfComposed(this.IncreasedProperties.Keys.ToList(),
+			List<ChangedInfoBO> returnList = this.GetCoreChangeInfosOfComposed(this.IncreasedProperties.Keys.ToList(),
 				this.MissingProperties.Keys.ToList(), x => x);
-			var elementType = this.GetElementType();
+			ChangedElementTypeEnum elementType = this.GetElementType();
 			const TypeEnum changeType = TypeEnum.Changed;
 
 			if (this.IsChangedType)

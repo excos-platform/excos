@@ -11,7 +11,7 @@ namespace LimeFlight.OpenAPI.Diff.Compare
 {
 	public class SecurityRequirementsDiff
 	{
-		private static RefPointer<OpenApiSecurityScheme> _refPointer =
+		private static readonly RefPointer<OpenApiSecurityScheme> _refPointer =
 			new RefPointer<OpenApiSecurityScheme>(RefTypeEnum.SecuritySchemes);
 
 		private readonly OpenApiComponents _leftComponents;
@@ -34,8 +34,8 @@ namespace LimeFlight.OpenAPI.Diff.Compare
 
 		public bool Same(OpenApiSecurityRequirement left, OpenApiSecurityRequirement right)
 		{
-			var leftTypes = GetListOfSecuritySchemes(this._leftComponents, left);
-			var rightTypes = GetListOfSecuritySchemes(this._rightComponents, right);
+			ImmutableDictionary<SecuritySchemeType, ParameterLocation> leftTypes = GetListOfSecuritySchemes(this._leftComponents, left);
+			ImmutableDictionary<SecuritySchemeType, ParameterLocation> rightTypes = GetListOfSecuritySchemes(this._rightComponents, right);
 
 			return leftTypes.SequenceEqual(rightTypes);
 		}
@@ -44,9 +44,9 @@ namespace LimeFlight.OpenAPI.Diff.Compare
 			OpenApiComponents components, OpenApiSecurityRequirement securityRequirement)
 		{
 			var tmpResult = new Dictionary<SecuritySchemeType, ParameterLocation>();
-			foreach (var openApiSecurityScheme in securityRequirement.Keys.ToList())
+			foreach (OpenApiSecurityScheme openApiSecurityScheme in securityRequirement.Keys.ToList())
 				if (components.SecuritySchemes.TryGetValue(openApiSecurityScheme.Reference?.ReferenceV3,
-					out var result))
+					out OpenApiSecurityScheme result))
 				{
 					if (!tmpResult.ContainsKey(result.Type))
 						tmpResult.Add(result.Type, result.In);
@@ -67,19 +67,19 @@ namespace LimeFlight.OpenAPI.Diff.Compare
 
 			var changedSecurityRequirements = new ChangedSecurityRequirementsBO(left, right);
 
-			foreach (var leftSecurity in left)
+			foreach (OpenApiSecurityRequirement leftSecurity in left)
 			{
-				var rightSecOpt = this.Contains(right, leftSecurity);
+				OpenApiSecurityRequirement rightSecOpt = this.Contains(right, leftSecurity);
 				if (rightSecOpt == null)
 				{
 					changedSecurityRequirements.Missing.Add(leftSecurity);
 				}
 				else
 				{
-					var rightSec = rightSecOpt;
+					OpenApiSecurityRequirement rightSec = rightSecOpt;
 
 					right.Remove(rightSec);
-					var diff =
+					ChangedSecurityRequirementBO diff =
 						this._openApiDiff.SecurityRequirementDiff
 							.Diff(leftSecurity, rightSec, context);
 					if (diff != null)

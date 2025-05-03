@@ -69,7 +69,7 @@ namespace LimeFlight.OpenAPI.Diff.BusinessObjects
 		protected override List<ChangedInfoBO> GetCoreChanges()
 		{
 			var returnList = new List<ChangedInfoBO>();
-			var elementType = this.GetElementType();
+			ChangedElementTypeEnum elementType = this.GetElementType();
 			const TypeEnum changeType = TypeEnum.Changed;
 
 			if (this.IsChangeRequired)

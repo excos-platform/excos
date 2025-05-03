@@ -15,22 +15,22 @@ namespace LimeFlight.OpenAPI.Diff.Compare
 
 		public ChangedPathBO Diff(OpenApiPathItem left, OpenApiPathItem right, DiffContextBO context)
 		{
-			var oldOperationMap = left.Operations;
-			var newOperationMap = right.Operations;
+			System.Collections.Generic.IDictionary<OperationType, OpenApiOperation> oldOperationMap = left.Operations;
+			System.Collections.Generic.IDictionary<OperationType, OpenApiOperation> newOperationMap = right.Operations;
 			var operationsDiff =
 				MapKeyDiff<OperationType, OpenApiOperation>.Diff(oldOperationMap, newOperationMap);
-			var sharedMethods = operationsDiff.SharedKey;
+			System.Collections.Generic.List<OperationType> sharedMethods = operationsDiff.SharedKey;
 			var changedPath = new ChangedPathBO(context.URL, left, right, context)
 			{
 				Increased = operationsDiff.Increased,
 				Missing = operationsDiff.Missing
 			};
-			foreach (var operationType in sharedMethods)
+			foreach (OperationType operationType in sharedMethods)
 			{
-				var oldOperation = oldOperationMap[operationType];
-				var newOperation = newOperationMap[operationType];
+				OpenApiOperation oldOperation = oldOperationMap[operationType];
+				OpenApiOperation newOperation = newOperationMap[operationType];
 
-				var diff = this._openApiDiff
+				ChangedOperationBO diff = this._openApiDiff
 					.OperationDiff
 					.Diff(oldOperation, newOperation, context.CopyWithMethod(operationType));
 

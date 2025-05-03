@@ -21,25 +21,25 @@ namespace LimeFlight.OpenAPI.Diff.Compare
 		{
 			var changedPaths = new ChangedPathsBO(left, right);
 
-			foreach (var (key, value) in right) changedPaths.Increased.Add(key, value);
+			foreach ((string key, OpenApiPathItem value) in right) changedPaths.Increased.Add(key, value);
 
-			foreach (var (key, value) in left)
+			foreach ((string key, OpenApiPathItem value) in left)
 			{
-				var template = key.NormalizePath();
-				var result = right.Keys.FirstOrDefault(x => x.NormalizePath() == template);
+				string template = key.NormalizePath();
+				string result = right.Keys.FirstOrDefault(x => x.NormalizePath() == template);
 
 				if (result != null)
 				{
 					if (!changedPaths.Increased.ContainsKey(result))
 						throw new ArgumentException($"Two path items have the same signature: {template}");
-					var rightPath = changedPaths.Increased[result];
+					OpenApiPathItem rightPath = changedPaths.Increased[result];
 					changedPaths.Increased.Remove(result);
 					var paramsDict = new Dictionary<string, string>();
 					if (key != result)
 					{
-						var oldParams = key.ExtractParametersFromPath();
-						var newParams = result.ExtractParametersFromPath();
-						for (var i = oldParams.Count - 1; i >= 0; i--) paramsDict.Add(oldParams[i], newParams[i]);
+						List<string> oldParams = key.ExtractParametersFromPath();
+						List<string> newParams = result.ExtractParametersFromPath();
+						for (int i = oldParams.Count - 1; i >= 0; i--) paramsDict.Add(oldParams[i], newParams[i]);
 					}
 
 					var context = new DiffContextBO
@@ -48,7 +48,7 @@ namespace LimeFlight.OpenAPI.Diff.Compare
 						Parameters = paramsDict
 					};
 
-					var diff = this._openApiDiff
+					ChangedPathBO diff = this._openApiDiff
 						.PathDiff
 						.Diff(value, rightPath, context);
 

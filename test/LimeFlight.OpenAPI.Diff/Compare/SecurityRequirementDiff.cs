@@ -24,7 +24,7 @@ namespace LimeFlight.OpenAPI.Diff.Compare
 		public static OpenApiSecurityRequirement GetCopy(Dictionary<OpenApiSecurityScheme, IList<string>> right)
 		{
 			var newSecurityRequirement = new OpenApiSecurityRequirement();
-			foreach (var (key, value) in right) newSecurityRequirement.Add(key, value);
+			foreach ((OpenApiSecurityScheme key, IList<string> value) in right) newSecurityRequirement.Add(key, value);
 
 			return newSecurityRequirement;
 		}
@@ -32,12 +32,12 @@ namespace LimeFlight.OpenAPI.Diff.Compare
 		private OpenApiSecurityRequirement Contains(
 			OpenApiSecurityRequirement right, string schemeRef)
 		{
-			var leftSecurityScheme = this._leftComponents.SecuritySchemes[schemeRef];
+			OpenApiSecurityScheme leftSecurityScheme = this._leftComponents.SecuritySchemes[schemeRef];
 			var found = new OpenApiSecurityRequirement();
 
-			foreach (var keyValuePair in right)
+			foreach (KeyValuePair<OpenApiSecurityScheme, IList<string>> keyValuePair in right)
 			{
-				var rightSecurityScheme = this._rightComponents.SecuritySchemes[keyValuePair.Key.Reference?.ReferenceV3];
+				OpenApiSecurityScheme rightSecurityScheme = this._rightComponents.SecuritySchemes[keyValuePair.Key.Reference?.ReferenceV3];
 				if (leftSecurityScheme.Type == rightSecurityScheme.Type)
 					switch (leftSecurityScheme.Type)
 					{
@@ -71,18 +71,18 @@ namespace LimeFlight.OpenAPI.Diff.Compare
 			left ??= new OpenApiSecurityRequirement();
 			right ??= new OpenApiSecurityRequirement();
 
-			foreach (var (key, value) in left)
+			foreach ((OpenApiSecurityScheme key, IList<string> value) in left)
 			{
-				var rightSec = this.Contains(right, key.Reference?.ReferenceV3);
+				OpenApiSecurityRequirement rightSec = this.Contains(right, key.Reference?.ReferenceV3);
 				if (rightSec.IsNullOrEmpty())
 				{
 					changedSecurityRequirement.Missing.Add(key, value);
 				}
 				else
 				{
-					var rightSchemeRef = rightSec.Keys.First();
+					OpenApiSecurityScheme rightSchemeRef = rightSec.Keys.First();
 					right.Remove(rightSchemeRef);
-					var diff =
+					ChangedSecuritySchemeBO diff =
 						this._openApiDiff
 							.SecuritySchemeDiff
 							.Diff(
@@ -96,7 +96,7 @@ namespace LimeFlight.OpenAPI.Diff.Compare
 				}
 			}
 
-			foreach (var (key, value) in right) changedSecurityRequirement.Increased.Add(key, value);
+			foreach ((OpenApiSecurityScheme key, IList<string> value) in right) changedSecurityRequirement.Increased.Add(key, value);
 
 			return ChangedUtils.IsChanged(changedSecurityRequirement);
 		}

@@ -33,10 +33,10 @@ namespace LimeFlight.OpenAPI.Diff.Compare
 
 			instance.Increased = new Dictionary<T1, T2>(mapRight);
 			instance.Missing = new Dictionary<T1, T2>();
-			foreach (var entry in mapLeft)
+			foreach (KeyValuePair<T1, T2> entry in mapLeft)
 			{
-				var leftKey = entry.Key;
-				var leftValue = entry.Value;
+				T1 leftKey = entry.Key;
+				T2 leftValue = entry.Value;
 				if (mapRight.ContainsKey(leftKey))
 				{
 					instance.Increased.Remove(leftKey);

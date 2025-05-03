@@ -11,8 +11,8 @@ namespace LimeFlight.OpenAPI.Diff.BusinessObjects
 
 		public override List<ChangedInfosBO> GetAllChangeInfoFlat(string identifier, List<string> parentPath = null)
 		{
-			var coreChangeInfo = this.GetCoreChangeInfo(identifier, parentPath);
-			var changedElements = this.GetChangedElements();
+			ChangedInfosBO coreChangeInfo = this.GetCoreChangeInfo(identifier, parentPath);
+			List<(string Identifier, ChangedBO Change)> changedElements = this.GetChangedElements();
 			var returnList = changedElements
 				.SelectMany(x => x.Change.GetAllChangeInfoFlat(x.Identifier, coreChangeInfo.Path))
 				.Where(x => !x.ChangeType.IsUnchanged())
@@ -26,7 +26,7 @@ namespace LimeFlight.OpenAPI.Diff.BusinessObjects
 
 		public override DiffResultBO IsChanged()
 		{
-			var elementsResultMax = this.GetChangedElements()
+			int elementsResultMax = this.GetChangedElements()
 				.Where(x => x.Change != null)
 				.Select(x => (int)x.Change.IsChanged().DiffResult)
 				.DefaultIfEmpty(0)
@@ -41,12 +41,12 @@ namespace LimeFlight.OpenAPI.Diff.BusinessObjects
 			Func<T, string> identifierSelector)
 		{
 			var returnList = new List<ChangedInfoBO>();
-			var elementType = this.GetElementType();
+			ChangedElementTypeEnum elementType = this.GetElementType();
 
-			foreach (var listElement in increased)
+			foreach (T listElement in increased)
 				returnList.Add(ChangedInfoBO.ForAdded(elementType, identifierSelector(listElement)));
 
-			foreach (var listElement in missing)
+			foreach (T listElement in missing)
 				returnList.Add(ChangedInfoBO.ForRemoved(elementType, identifierSelector(listElement)));
 			return returnList;
 		}

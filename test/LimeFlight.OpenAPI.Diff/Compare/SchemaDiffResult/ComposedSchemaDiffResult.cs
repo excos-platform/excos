@@ -22,7 +22,7 @@ namespace LimeFlight.OpenAPI.Diff.Compare.SchemaDiffResult
 			Dictionary<string, string> mapping)
 		{
 			var result = new Dictionary<string, OpenApiSchema>();
-			foreach (var map in mapping)
+			foreach (KeyValuePair<string, string> map in mapping)
 				result.Add(map.Key, refPointer.ResolveRef(components, new OpenApiSchema(), map.Value));
 			return result;
 		}
@@ -33,17 +33,17 @@ namespace LimeFlight.OpenAPI.Diff.Compare.SchemaDiffResult
 				return null;
 
 			var reverseMapping = new Dictionary<string, string>();
-			foreach (var schema in composedSchema.OneOf)
+			foreach (OpenApiSchema schema in composedSchema.OneOf)
 			{
-				var schemaRef = schema.Reference?.ReferenceV3;
+				string schemaRef = schema.Reference?.ReferenceV3;
 				if (schemaRef == null) throw new ArgumentNullException("invalid oneOf schema");
-				var schemaName = refPointer.GetRefName(schemaRef);
+				string schemaName = refPointer.GetRefName(schemaRef);
 				if (schemaName == null) throw new ArgumentNullException("invalid schema: " + schemaRef);
 				reverseMapping.Add(schemaRef, schemaName);
 			}
 
 			if (composedSchema.Discriminator != null && !composedSchema.Discriminator.Mapping.IsNullOrEmpty())
-				foreach (var (key, value) in composedSchema.Discriminator.Mapping)
+				foreach ((string key, string value) in composedSchema.Discriminator.Mapping)
 					if (!reverseMapping.TryAdd(value, key))
 						reverseMapping[value] = key;
 
@@ -58,8 +58,8 @@ namespace LimeFlight.OpenAPI.Diff.Compare.SchemaDiffResult
 			{
 				if (!left.OneOf.IsNullOrEmpty() || !right.OneOf.IsNullOrEmpty())
 				{
-					var leftDis = left.Discriminator;
-					var rightDis = right.Discriminator;
+					OpenApiDiscriminator leftDis = left.Discriminator;
+					OpenApiDiscriminator rightDis = right.Discriminator;
 
 					if ((leftDis == null && rightDis != null)
 						|| (leftDis != null && rightDis == null)
@@ -77,22 +77,22 @@ namespace LimeFlight.OpenAPI.Diff.Compare.SchemaDiffResult
 						return this.ChangedSchema;
 					}
 
-					var leftMapping = GetMapping(left);
-					var rightMapping = GetMapping(right);
+					Dictionary<string, string> leftMapping = GetMapping(left);
+					Dictionary<string, string> rightMapping = GetMapping(right);
 
 					var mappingDiff = MapKeyDiff<string, OpenApiSchema>.Diff(GetSchema(leftComponents, leftMapping),
 						GetSchema(rightComponents, rightMapping));
 					var changedMapping = new Dictionary<string, ChangedSchemaBO>();
-					foreach (var refId in mappingDiff.SharedKey)
+					foreach (string refId in mappingDiff.SharedKey)
 					{
-						var leftReference = leftComponents.Schemas.Values
+						OpenApiReference leftReference = leftComponents.Schemas.Values
 							.First(x => x.Reference.ReferenceV3 == leftMapping[refId]).Reference;
-						var rightReference = rightComponents.Schemas.Values
+						OpenApiReference rightReference = rightComponents.Schemas.Values
 							.First(x => x.Reference.ReferenceV3 == rightMapping[refId]).Reference;
 
 						var leftSchema = new OpenApiSchema { Reference = leftReference };
 						var rightSchema = new OpenApiSchema { Reference = rightReference };
-						var changedSchema = this.OpenApiDiff.SchemaDiff
+						ChangedSchemaBO changedSchema = this.OpenApiDiff.SchemaDiff
 							.Diff(leftSchema, rightSchema, context.CopyWithRequired(true));
 						if (changedSchema != null)
 							changedMapping.Add(refId, changedSchema);

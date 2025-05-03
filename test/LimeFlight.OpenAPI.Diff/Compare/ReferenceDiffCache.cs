@@ -22,15 +22,15 @@ namespace LimeFlight.OpenAPI.Diff.Compare
 			string rightRef,
 			DiffContextBO context)
 		{
-			var areBothRefParameters = leftRef != null && rightRef != null;
+			bool areBothRefParameters = leftRef != null && rightRef != null;
 			if (areBothRefParameters)
 			{
 				var key = new CacheKey(leftRef, rightRef, context);
-				if (this.RefDiffMap.TryGetValue(key, out var changedFromRef))
+				if (this.RefDiffMap.TryGetValue(key, out TD changedFromRef))
 					return changedFromRef;
 
 				this.RefDiffMap.Add(key, null);
-				var changed = this.ComputeDiff(left, right, context);
+				TD changed = this.ComputeDiff(left, right, context);
 				this.RefDiffMap[key] = changed;
 				return changed;
 			}

@@ -28,12 +28,12 @@ namespace LimeFlight.OpenAPI.Diff.Compare
 
 
 			var mediaTypeDiff = MapKeyDiff<string, OpenApiMediaType>.Diff(leftDict, rightDict);
-			var sharedMediaTypes = mediaTypeDiff.SharedKey;
+			List<string> sharedMediaTypes = mediaTypeDiff.SharedKey;
 			var changedMediaTypes = new Dictionary<string, ChangedMediaTypeBO>();
-			foreach (var sharedMediaType in sharedMediaTypes)
+			foreach (string sharedMediaType in sharedMediaTypes)
 			{
-				var oldMediaType = left[sharedMediaType];
-				var newMediaType = right[sharedMediaType];
+				OpenApiMediaType oldMediaType = left[sharedMediaType];
+				OpenApiMediaType newMediaType = right[sharedMediaType];
 				var changedMediaType =
 					new ChangedMediaTypeBO(oldMediaType?.Schema, newMediaType?.Schema, context)
 					{

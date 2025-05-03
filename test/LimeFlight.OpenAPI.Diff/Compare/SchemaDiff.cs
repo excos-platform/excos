@@ -55,7 +55,7 @@ namespace LimeFlight.OpenAPI.Diff.Compare
 			{
 				if (schema.Properties == null) schema.Properties = new Dictionary<string, OpenApiSchema>();
 
-				foreach (var property in fromSchema.Properties) schema.Properties.Add(property);
+				foreach (KeyValuePair<string, OpenApiSchema> property in fromSchema.Properties) schema.Properties.Add(property);
 			}
 
 			if (fromSchema.Required != null)
@@ -63,7 +63,7 @@ namespace LimeFlight.OpenAPI.Diff.Compare
 				if (schema.Required == null)
 					schema.Required = fromSchema.Required;
 				else
-					foreach (var required in fromSchema.Required)
+					foreach (string required in fromSchema.Required)
 						schema.Required.Add(required);
 			}
 
@@ -82,26 +82,26 @@ namespace LimeFlight.OpenAPI.Diff.Compare
 			{
 				if (schema.Enum == null) schema.Enum = new List<IOpenApiAny>();
 				//noinspection unchecked
-				foreach (var element in fromSchema.Enum) schema.Enum.Add(element);
+				foreach (IOpenApiAny element in fromSchema.Enum) schema.Enum.Add(element);
 			}
 
 			if (fromSchema.Extensions != null)
 			{
 				if (schema.Extensions == null) schema.Extensions = new Dictionary<string, IOpenApiExtension>();
-				foreach (var element in fromSchema.Extensions) schema.Extensions.Add(element);
+				foreach (KeyValuePair<string, IOpenApiExtension> element in fromSchema.Extensions) schema.Extensions.Add(element);
 			}
 
 			if (fromSchema.Discriminator != null)
 			{
 				if (schema.Discriminator == null) schema.Discriminator = new OpenApiDiscriminator();
-				var discriminator = schema.Discriminator;
-				var fromDiscriminator = fromSchema.Discriminator;
+				OpenApiDiscriminator discriminator = schema.Discriminator;
+				OpenApiDiscriminator fromDiscriminator = fromSchema.Discriminator;
 
 				if (fromDiscriminator.PropertyName != null) discriminator.PropertyName = fromDiscriminator.PropertyName;
 				if (fromDiscriminator.Mapping != null)
 				{
 					if (discriminator.Mapping == null) discriminator.Mapping = new Dictionary<string, string>();
-					foreach (var element in fromDiscriminator.Mapping) discriminator.Mapping.Add(element);
+					foreach (KeyValuePair<string, string> element in fromDiscriminator.Mapping) discriminator.Mapping.Add(element);
 				}
 			}
 
@@ -112,15 +112,15 @@ namespace LimeFlight.OpenAPI.Diff.Compare
 			if (fromSchema.ExternalDocs != null)
 			{
 				if (schema.ExternalDocs == null) schema.ExternalDocs = new OpenApiExternalDocs();
-				var externalDocs = schema.ExternalDocs;
-				var fromExternalDocs = fromSchema.ExternalDocs;
+				OpenApiExternalDocs externalDocs = schema.ExternalDocs;
+				OpenApiExternalDocs fromExternalDocs = fromSchema.ExternalDocs;
 				if (fromExternalDocs.Description != null) externalDocs.Description = fromExternalDocs.Description;
 				if (fromExternalDocs.Extensions != null)
 				{
 					if (externalDocs.Extensions == null)
 						externalDocs.Extensions = new Dictionary<string, IOpenApiExtension>();
 
-					foreach (var element in fromSchema.Extensions) schema.Extensions.Add(element);
+					foreach (KeyValuePair<string, IOpenApiExtension> element in fromSchema.Extensions) schema.Extensions.Add(element);
 				}
 
 				if (fromExternalDocs.Url != null) externalDocs.Url = fromExternalDocs.Url;
@@ -147,8 +147,8 @@ namespace LimeFlight.OpenAPI.Diff.Compare
 			if (fromSchema.Xml != null)
 			{
 				if (schema.Xml == null) schema.Xml = new OpenApiXml();
-				var xml = schema.Xml;
-				var fromXml = fromSchema.Xml;
+				OpenApiXml xml = schema.Xml;
+				OpenApiXml fromXml = fromSchema.Xml;
 
 				xml.Attribute = fromXml.Attribute;
 
@@ -157,7 +157,7 @@ namespace LimeFlight.OpenAPI.Diff.Compare
 				if (fromXml.Extensions != null)
 				{
 					if (xml.Extensions == null) xml.Extensions = new Dictionary<string, IOpenApiExtension>();
-					foreach (var element in fromXml.Extensions) xml.Extensions.Add(element);
+					foreach (KeyValuePair<string, IOpenApiExtension> element in fromXml.Extensions) xml.Extensions.Add(element);
 				}
 
 				if (fromXml.Prefix != null) xml.Prefix = fromXml.Prefix;
@@ -176,12 +176,12 @@ namespace LimeFlight.OpenAPI.Diff.Compare
 				return new KeyValuePair<string, OpenApiSchema>(string.Empty, null);
 
 			// Get combined schema name
-			var refName = "allOfCombined-";
+			string refName = "allOfCombined-";
 			allOfSchemaList
 				.ForEach(x => refName += x.Reference?.ReferenceV3);
 
 			// If the same refName was already created before 
-			if (components.Schemas.TryGetValue(refName, out var composedSchema))
+			if (components.Schemas.TryGetValue(refName, out OpenApiSchema composedSchema))
 				return new KeyValuePair<string, OpenApiSchema>(refName, composedSchema);
 
 			//// Add combined schema name with empty schema
@@ -190,13 +190,13 @@ namespace LimeFlight.OpenAPI.Diff.Compare
 			// Construct combined schema
 			var allOfCombinedSchema = new OpenApiSchema();
 			allOfCombinedSchema = AddSchema(allOfCombinedSchema, schema);
-			foreach (var t in allOfSchemaList)
+			foreach (OpenApiSchema t in allOfSchemaList)
 			{
-				var allOfSchema = t;
+				OpenApiSchema allOfSchema = t;
 				allOfSchema =
 					RefPointer.ResolveRef(components, allOfSchema, allOfSchema.Reference?.ReferenceV3);
 
-				var result = ResolveComposedSchema(components, allOfSchema);
+				KeyValuePair<string, OpenApiSchema> result = ResolveComposedSchema(components, allOfSchema);
 
 				if (result.Value != null)
 				{
@@ -223,19 +223,19 @@ namespace LimeFlight.OpenAPI.Diff.Compare
 		{
 			if (left == null && right == null) return null;
 
-			var leftRef = GetSchemaRef(left);
-			var rightRef = GetSchemaRef(right);
+			string leftRef = GetSchemaRef(left);
+			string rightRef = GetSchemaRef(right);
 
 			if (left != null && left.AllOf.Any())
 			{
-				var result = ResolveComposedSchema(this._leftComponents, left);
+				KeyValuePair<string, OpenApiSchema> result = ResolveComposedSchema(this._leftComponents, left);
 				leftRef = result.Key;
 				left = result.Value;
 			}
 
 			if (right != null && right.AllOf.Any())
 			{
-				var result = ResolveComposedSchema(this._rightComponents, right);
+				KeyValuePair<string, OpenApiSchema> result = ResolveComposedSchema(this._rightComponents, right);
 				rightRef = result.Key;
 				right = result.Value;
 			}
@@ -246,7 +246,7 @@ namespace LimeFlight.OpenAPI.Diff.Compare
 		public ChangedSchemaBO GetTypeChangedSchema(
 			OpenApiSchema left, OpenApiSchema right, DiffContextBO context)
 		{
-			var schemaDiffResult = GetSchemaDiffResult(this._openApiDiff);
+			SchemaDiffResult.SchemaDiffResult schemaDiffResult = GetSchemaDiffResult(this._openApiDiff);
 			schemaDiffResult.ChangedSchema.OldSchema = left;
 			schemaDiffResult.ChangedSchema.NewSchema = right;
 			schemaDiffResult.ChangedSchema.IsChangedType = true;
@@ -257,8 +257,8 @@ namespace LimeFlight.OpenAPI.Diff.Compare
 
 		protected override ChangedSchemaBO ComputeDiff(OpenApiSchema left, OpenApiSchema right, DiffContextBO context)
 		{
-			var leftRef = GetSchemaRef(left);
-			var rightRef = GetSchemaRef(right);
+			string leftRef = GetSchemaRef(left);
+			string rightRef = GetSchemaRef(right);
 
 			left = RefPointer.ResolveRef(this._leftComponents, left, GetSchemaRef(left));
 			right = RefPointer.ResolveRef(this._rightComponents, right, GetSchemaRef(right));
@@ -272,7 +272,7 @@ namespace LimeFlight.OpenAPI.Diff.Compare
 				return this.GetTypeChangedSchema(left, right, context);
 
 			// If schema type is same then get specific SchemaDiffResult and compare the properties
-			var result = GetSchemaDiffResult(right, this._openApiDiff);
+			SchemaDiffResult.SchemaDiffResult result = GetSchemaDiffResult(right, this._openApiDiff);
 			return result.Diff(this._leftComponents, this._rightComponents, left, right, context);
 		}
 	}

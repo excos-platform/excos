@@ -23,7 +23,7 @@ namespace LimeFlight.OpenAPI.Diff.Compare
 			}
 
 			instance.Increased.AddRange(instance.NewValue);
-			foreach (var leftItem in instance.OldValue)
+			foreach (string leftItem in instance.OldValue)
 				if (instance.NewValue.Contains(leftItem))
 				{
 					instance.Increased.Remove(leftItem);

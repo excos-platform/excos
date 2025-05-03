@@ -21,13 +21,13 @@ namespace LimeFlight.OpenAPI.Diff.Utils
 		{
 			if (reference != null)
 			{
-				var refName = this.GetRefName(reference);
-				var maps = this.GetMap(components);
-				maps.TryGetValue(refName, out var result);
+				string refName = this.GetRefName(reference);
+				Dictionary<string, T> maps = this.GetMap(components);
+				maps.TryGetValue(refName, out T result);
 				if (result == null)
 				{
 					var caseInsensitiveDictionary = new Dictionary<string, T>(maps, StringComparer.OrdinalIgnoreCase);
-					if (caseInsensitiveDictionary.TryGetValue(refName, out var insensitiveValue))
+					if (caseInsensitiveDictionary.TryGetValue(refName, out T insensitiveValue))
 						throw new Exception(
 							$"Reference case sensitive error. {refName} is not equal to {caseInsensitiveDictionary.First(x => x.Value.Equals(insensitiveValue)).Key}");
 
@@ -66,7 +66,7 @@ namespace LimeFlight.OpenAPI.Diff.Utils
 			if (reference == null) return null;
 			if (this._refType == RefTypeEnum.SecuritySchemes) return reference;
 
-			var baseRef = GetBaseRefForType(this._refType.GetDisplayName());
+			string baseRef = GetBaseRefForType(this._refType.GetDisplayName());
 			if (!reference.StartsWith(baseRef, StringComparison.CurrentCultureIgnoreCase))
 				throw new AggregateException("Invalid ref: " + reference);
 			return reference.Substring(baseRef.Length);

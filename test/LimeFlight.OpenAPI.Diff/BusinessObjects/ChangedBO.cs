@@ -25,7 +25,7 @@ namespace LimeFlight.OpenAPI.Diff.BusinessObjects
 
 		public ChangedInfosBO GetCoreChangeInfo(string identifier, List<string> parentPath = null)
 		{
-			var isChanged = this.IsCoreChanged();
+			DiffResultBO isChanged = this.IsCoreChanged();
 			var newPath = new List<string>();
 
 			if (!parentPath.IsNullOrEmpty())

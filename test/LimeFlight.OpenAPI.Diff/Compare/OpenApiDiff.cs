@@ -92,7 +92,7 @@ namespace LimeFlight.OpenAPI.Diff.Compare
 		{
 			PreProcess(this.OldSpecOpenApi);
 			PreProcess(this.NewSpecOpenApi);
-			var paths =
+			ChangedPathsBO paths =
 				this.PathsDiff.Diff(PathsDiff.ValOrEmpty(this.OldSpecOpenApi.Paths), PathsDiff.ValOrEmpty(this.NewSpecOpenApi.Paths));
 			this.NewEndpoints = new List<EndpointBO>();
 			this.MissingEndpoints = new List<EndpointBO>();
@@ -102,7 +102,7 @@ namespace LimeFlight.OpenAPI.Diff.Compare
 			{
 				this.NewEndpoints = EndpointUtils.ConvertToEndpointList<EndpointBO>(paths.Increased);
 				this.MissingEndpoints = EndpointUtils.ConvertToEndpointList<EndpointBO>(paths.Missing);
-				foreach (var (key, value) in paths.Changed)
+				foreach ((string key, ChangedPathBO value) in paths.Changed)
 				{
 					this.NewEndpoints.AddRange(EndpointUtils.ConvertToEndpoints<EndpointBO>(key, value.Increased));
 					this.MissingEndpoints.AddRange(EndpointUtils.ConvertToEndpoints<EndpointBO>(key, value.Missing));
@@ -110,7 +110,7 @@ namespace LimeFlight.OpenAPI.Diff.Compare
 				}
 			}
 
-			var diff = this.ExtensionsDiff
+			ChangedExtensionsBO diff = this.ExtensionsDiff
 				.Diff(this.OldSpecOpenApi.Extensions, this.NewSpecOpenApi.Extensions);
 
 			if (diff != null)
@@ -120,27 +120,27 @@ namespace LimeFlight.OpenAPI.Diff.Compare
 
 		private static void PreProcess(OpenApiDocument openApi)
 		{
-			var securityRequirements = openApi.SecurityRequirements;
+			IList<OpenApiSecurityRequirement> securityRequirements = openApi.SecurityRequirements;
 
 			if (securityRequirements != null)
 			{
 				var distinctSecurityRequirements =
 					securityRequirements.Distinct().ToList();
-				var paths = openApi.Paths;
+				OpenApiPaths paths = openApi.Paths;
 				if (paths != null)
-					foreach (var openApiPathItem in paths.Values)
+					foreach (OpenApiPathItem openApiPathItem in paths.Values)
 					{
-						var operationsWithSecurity = openApiPathItem
+						IEnumerable<OpenApiOperation> operationsWithSecurity = openApiPathItem
 							.Operations
 							.Values
 							.Where(x => !x.Security.IsNullOrEmpty());
-						foreach (var openApiOperation in operationsWithSecurity)
+						foreach (OpenApiOperation openApiOperation in operationsWithSecurity)
 							openApiOperation.Security = openApiOperation.Security.Distinct().ToList();
-						var operationsWithoutSecurity = openApiPathItem
+						IEnumerable<OpenApiOperation> operationsWithoutSecurity = openApiPathItem
 							.Operations
 							.Values
 							.Where(x => x.Security.IsNullOrEmpty());
-						foreach (var openApiOperation in operationsWithoutSecurity)
+						foreach (OpenApiOperation openApiOperation in operationsWithoutSecurity)
 							openApiOperation.Security = distinctSecurityRequirements;
 					}
 

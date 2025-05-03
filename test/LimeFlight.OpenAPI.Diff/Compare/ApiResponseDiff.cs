@@ -17,11 +17,11 @@ namespace LimeFlight.OpenAPI.Diff.Compare
 		public ChangedAPIResponseBO Diff(OpenApiResponses left, OpenApiResponses right, DiffContextBO context)
 		{
 			var responseMapKeyDiff = MapKeyDiff<string, OpenApiResponse>.Diff(left, right);
-			var sharedResponseCodes = responseMapKeyDiff.SharedKey;
+			List<string> sharedResponseCodes = responseMapKeyDiff.SharedKey;
 			var responses = new Dictionary<string, ChangedResponseBO>();
-			foreach (var responseCode in sharedResponseCodes)
+			foreach (string responseCode in sharedResponseCodes)
 			{
-				var diff = this._openApiDiff
+				ChangedResponseBO diff = this._openApiDiff
 					.ResponseDiff
 					.Diff(left[responseCode], right[responseCode], context);
 

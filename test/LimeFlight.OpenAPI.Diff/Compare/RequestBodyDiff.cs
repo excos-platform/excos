@@ -28,8 +28,8 @@ namespace LimeFlight.OpenAPI.Diff.Compare
 		public ChangedRequestBodyBO Diff(
 			OpenApiRequestBody left, OpenApiRequestBody right, DiffContextBO context)
 		{
-			var leftRef = left.Reference?.ReferenceV3;
-			var rightRef = right.Reference?.ReferenceV3;
+			string leftRef = left.Reference?.ReferenceV3;
+			string rightRef = right.Reference?.ReferenceV3;
 			return this.CachedDiff(left, right, leftRef, rightRef, context);
 		}
 
@@ -59,9 +59,9 @@ namespace LimeFlight.OpenAPI.Diff.Compare
 					newRequestContent = (Dictionary<string, OpenApiMediaType>)newRequestBody.Content;
 			}
 
-			var leftRequired =
+			bool leftRequired =
 				oldRequestBody != null && oldRequestBody.Required;
-			var rightRequired =
+			bool rightRequired =
 				newRequestBody != null && newRequestBody.Required;
 
 			var changedRequestBody =

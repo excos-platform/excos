@@ -26,21 +26,21 @@ namespace LimeFlight.OpenAPI.Diff.BusinessObjects
 
 		public DiffContextBO CopyWithMethod(OperationType method)
 		{
-			var result = this.Copy();
+			DiffContextBO result = this.Copy();
 			result.Method = method;
 			return result;
 		}
 
 		public DiffContextBO CopyWithRequired(bool required)
 		{
-			var result = this.Copy();
+			DiffContextBO result = this.Copy();
 			result.IsRequired = required;
 			return result;
 		}
 
 		public DiffContextBO CopyAsRequest()
 		{
-			var result = this.Copy();
+			DiffContextBO result = this.Copy();
 			result.IsRequest = true;
 			result.IsResponse = false;
 			return result;
@@ -48,7 +48,7 @@ namespace LimeFlight.OpenAPI.Diff.BusinessObjects
 
 		public DiffContextBO CopyAsResponse()
 		{
-			var result = this.Copy();
+			DiffContextBO result = this.Copy();
 			result.IsResponse = true;
 			result.IsRequest = false;
 			return result;

@@ -33,12 +33,12 @@ namespace LimeFlight.OpenAPI.Diff.BusinessObjects
 		protected override List<ChangedInfoBO> GetCoreChanges()
 		{
 			var returnList = new List<ChangedInfoBO>();
-			var elementType = this.GetElementType();
+			ChangedElementTypeEnum elementType = this.GetElementType();
 
-			foreach (var listElement in this.Increased)
+			foreach (T listElement in this.Increased)
 				returnList.Add(ChangedInfoBO.ForAdded(elementType, listElement.ToString()));
 
-			foreach (var listElement in this.Missing)
+			foreach (T listElement in this.Missing)
 				returnList.Add(ChangedInfoBO.ForRemoved(elementType, listElement.ToString()));
 			return returnList;
 		}

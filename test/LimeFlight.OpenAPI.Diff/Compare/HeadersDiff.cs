@@ -18,14 +18,14 @@ namespace LimeFlight.OpenAPI.Diff.Compare
 			DiffContextBO context)
 		{
 			var headerMapDiff = MapKeyDiff<string, OpenApiHeader>.Diff(left, right);
-			var sharedHeaderKeys = headerMapDiff.SharedKey;
+			List<string> sharedHeaderKeys = headerMapDiff.SharedKey;
 
 			var changed = new Dictionary<string, ChangedHeaderBO>();
-			foreach (var headerKey in sharedHeaderKeys)
+			foreach (string headerKey in sharedHeaderKeys)
 			{
-				var oldHeader = left[headerKey];
-				var newHeader = right[headerKey];
-				var changedHeaders = this._openApiDiff
+				OpenApiHeader oldHeader = left[headerKey];
+				OpenApiHeader newHeader = right[headerKey];
+				ChangedHeaderBO changedHeaders = this._openApiDiff
 					.HeaderDiff
 					.Diff(oldHeader, newHeader, context);
 				if (changedHeaders != null)

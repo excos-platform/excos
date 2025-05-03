@@ -38,7 +38,7 @@ namespace LimeFlight.OpenAPI.Diff.Compare
 		{
 			unchecked
 			{
-				var hashCode = this.left != null ? this.left.GetHashCode() : 0;
+				int hashCode = this.left != null ? this.left.GetHashCode() : 0;
 				hashCode = (hashCode * 397) ^ (this.right != null ? this.right.GetHashCode() : 0);
 				hashCode = (hashCode * 397) ^ (this.context != null ? this.context.GetHashCode() : 0);
 				return hashCode;

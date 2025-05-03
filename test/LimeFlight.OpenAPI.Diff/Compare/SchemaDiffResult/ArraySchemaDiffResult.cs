@@ -22,7 +22,7 @@ namespace LimeFlight.OpenAPI.Diff.Compare.SchemaDiffResult
 
 			base.Diff(leftComponents, rightComponents, left, right, context);
 
-			var diff = this.OpenApiDiff
+			ChangedSchemaBO diff = this.OpenApiDiff
 				.SchemaDiff
 				.Diff(
 					left.Items,

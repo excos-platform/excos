@@ -37,7 +37,7 @@ namespace LimeFlight.OpenAPI.Diff.Compare
 					.Diff(
 						oldOperation.RequestBody, newOperation.RequestBody, context.CopyAsRequest());
 
-			var parametersDiff = this._openApiDiff
+			ChangedParametersBO parametersDiff = this._openApiDiff
 				.ParametersDiff
 				.Diff(oldOperation.Parameters.ToList(), newOperation.Parameters.ToList(), context);
 
@@ -50,7 +50,7 @@ namespace LimeFlight.OpenAPI.Diff.Compare
 
 			if (oldOperation.Responses != null || newOperation.Responses != null)
 			{
-				var diff = this._openApiDiff
+				ChangedAPIResponseBO diff = this._openApiDiff
 					.APIResponseDiff
 					.Diff(oldOperation.Responses, newOperation.Responses, context.CopyAsResponse());
 
@@ -60,7 +60,7 @@ namespace LimeFlight.OpenAPI.Diff.Compare
 
 			if (oldOperation.Security != null || newOperation.Security != null)
 			{
-				var diff = this._openApiDiff
+				ChangedSecurityRequirementsBO diff = this._openApiDiff
 					.SecurityRequirementsDiff
 					.Diff(oldOperation.Security, newOperation.Security, context);
 
@@ -78,7 +78,7 @@ namespace LimeFlight.OpenAPI.Diff.Compare
 
 		public void RemovePathParameters(Dictionary<string, string> pathParameters, ChangedParametersBO parameters)
 		{
-			foreach (var (oldParam, newParam) in pathParameters)
+			foreach ((string oldParam, string newParam) in pathParameters)
 			{
 				this.RemovePathParameter(oldParam, parameters.Missing);
 				this.RemovePathParameter(newParam, parameters.Increased);
@@ -87,7 +87,7 @@ namespace LimeFlight.OpenAPI.Diff.Compare
 
 		public void RemovePathParameter(string name, List<OpenApiParameter> parameters)
 		{
-			var openApiParameters = parameters
+			OpenApiParameter openApiParameters = parameters
 				.FirstOrDefault(x => x.In == ParameterLocation.Path && x.Name == name);
 			if (!parameters.IsNullOrEmpty() && openApiParameters != null)
 				parameters.Remove(openApiParameters);

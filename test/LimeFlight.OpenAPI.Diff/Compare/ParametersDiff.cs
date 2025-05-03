@@ -44,12 +44,12 @@ namespace LimeFlight.OpenAPI.Diff.Compare
 			if (null == left) left = new List<OpenApiParameter>();
 			if (null == right) right = new List<OpenApiParameter>();
 
-			foreach (var openApiParameter in left)
+			foreach (OpenApiParameter openApiParameter in left)
 			{
-				var leftPara = openApiParameter;
+				OpenApiParameter leftPara = openApiParameter;
 				leftPara = RefPointer.ResolveRef(this._leftComponents, leftPara, leftPara.Reference?.ReferenceV3);
 
-				var rightParam = Contains(this._rightComponents, right, leftPara);
+				OpenApiParameter rightParam = Contains(this._rightComponents, right, leftPara);
 				if (rightParam == null)
 				{
 					changedParameters.Missing.Add(leftPara);
@@ -58,7 +58,7 @@ namespace LimeFlight.OpenAPI.Diff.Compare
 				{
 					right.Remove(rightParam);
 
-					var diff = this._openApiDiff.ParameterDiff
+					ChangedParameterBO diff = this._openApiDiff.ParameterDiff
 						.Diff(leftPara, rightParam, context);
 					if (diff != null)
 						changedParameters.Changed.Add(diff);

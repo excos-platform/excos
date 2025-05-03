@@ -16,7 +16,7 @@ namespace LimeFlight.OpenAPI.Diff.Extensions
 		{
 			var paramsList = new List<string>();
 			var reg = new Regex(RegexPath);
-			var matches = reg.Matches(path);
+			MatchCollection matches = reg.Matches(path);
 			if (!matches.IsNullOrEmpty())
 				foreach (Match m in matches)
 					paramsList.Add(m.Groups[1].Value);

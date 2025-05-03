@@ -26,23 +26,23 @@ namespace LimeFlight.OpenAPI.Diff.Compare
 			List<string> rightScopes,
 			DiffContextBO context)
 		{
-			var leftSecurityScheme = this._leftComponents.SecuritySchemes[leftSchemeRef];
-			var rightSecurityScheme = this._rightComponents.SecuritySchemes[rightSchemeRef];
-			var changedSecuritySchemeOpt =
+			OpenApiSecurityScheme leftSecurityScheme = this._leftComponents.SecuritySchemes[leftSchemeRef];
+			OpenApiSecurityScheme rightSecurityScheme = this._rightComponents.SecuritySchemes[rightSchemeRef];
+			ChangedSecuritySchemeBO changedSecuritySchemeOpt =
 				this.CachedDiff(
 					leftSecurityScheme,
 					rightSecurityScheme,
 					leftSchemeRef,
 					rightSchemeRef,
 					context);
-			var changedSecurityScheme =
+			ChangedSecuritySchemeBO changedSecurityScheme =
 				changedSecuritySchemeOpt ?? new ChangedSecuritySchemeBO(leftSecurityScheme, rightSecurityScheme);
 			changedSecurityScheme = GetCopyWithoutScopes(changedSecurityScheme);
 
 			if (changedSecurityScheme != null
 				&& leftSecurityScheme.Type == SecuritySchemeType.OAuth2)
 			{
-				var changed = ChangedUtils.IsChanged(ListDiff.Diff(
+				ChangedSecuritySchemeScopesBO changed = ChangedUtils.IsChanged(ListDiff.Diff(
 					new ChangedSecuritySchemeScopesBO(leftScopes, rightScopes)
 				));
 

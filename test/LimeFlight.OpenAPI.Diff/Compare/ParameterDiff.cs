@@ -61,8 +61,8 @@ namespace LimeFlight.OpenAPI.Diff.Compare
 
 		private static bool GetBooleanDiff(bool? left, bool? right)
 		{
-			var leftRequired = left ?? false;
-			var rightRequired = right ?? false;
+			bool leftRequired = left ?? false;
+			bool rightRequired = right ?? false;
 			return leftRequired != rightRequired;
 		}
 	}
