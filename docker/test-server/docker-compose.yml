@@ -6,6 +6,10 @@ services:
       ASPNETCORE_ENVIRONMENT: Staging
       ASPNETCORE_URLS: http://excos:80/
       ConnectionStrings__postgres: "Host=postgres;Port=5432;Database=excos;Username=docker;Password=docker"
+      OTEL_SERVICE_NAME: excos-web
+      OTEL_EXPORTER_OTLP_PROTOCOL: ${OTLP_PROTOCOL}
+      OTEL_EXPORTER_OTLP_ENDPOINT: ${OTLP_ENDPOINT}
+      OTEL_EXPORTER_OTLP_HEADERS: ${OTLP_HEADERS}
     depends_on:
       postgres:
         condition: service_healthy
