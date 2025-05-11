@@ -9,7 +9,7 @@ namespace Excos.Platform.AppHostTests;
 public static class AppHost
 {
 	private static readonly Lock OtlpServerLock = new Lock();
-	public static TestOtlpServer TestOtlpServer {get; private set;} = default!;
+	public static TestOtlpServer TestOtlpServer { get; private set; } = default!;
 
 	public static async Task<DistributedApplication> StartAsync()
 	{
