@@ -3,12 +3,15 @@ namespace Excos.Platform.WebApiHostTests
 open Xunit
 open Excos.Platform.AppHostTests
 open Excos.Platform.ApiClient.V1
+open Excos.Testing.OpenTelemetry.Asserts
 
 module Tests =
 
+    let appTask = AppHost.StartAsync()
+
     [<Fact>]
     let ``Api / returns "Hello World!"`` () = task {
-        use! app = AppHost.StartAsync()
+        let! app = appTask
         let! client = app.GetWebApiClientAsync()
 
         let! response = client.GetAsync("/")
@@ -19,7 +22,7 @@ module Tests =
 
     [<Fact>]
     let ``Api /counter performs increases over managed state`` () = task {
-        use! app = AppHost.StartAsync()
+        use! app = appTask
         let! httpClient = app.GetWebApiClientAsync()
         let client = CountersClient(httpClient)
         client.ReadResponseAsString <- true // for debugging
@@ -41,4 +44,17 @@ module Tests =
         let! _ = client.IncreaseByKeyAsync(counterRef)
         let! response = client.GetByKeyAsync(counterRef)
         Assert.Equal(2, response.Value)
+    }
+
+    [<Fact>]
+    let ``Api /counter logs event`` () = task {
+        use! app = appTask
+        let! httpClient = app.GetWebApiClientAsync()
+        let client = CountersClient(httpClient)
+        let! _ = client.IncreaseByKeyAsync("'my-counter'")
+
+        do! AppHost.TestOtlpServer.WaitForEvents()
+
+        AppHost.TestOtlpServer.Should()
+            .HaveLog("Increased") |> ignore
     }
