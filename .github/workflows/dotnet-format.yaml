@@ -17,6 +17,10 @@ jobs:
         fetch-depth: 0 # full checkout
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
+    - name: Install Protoc
+      uses: arduino/setup-protoc@v3
+      with:
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
     - name: Install .NET Aspire workload
       run: dotnet workload install aspire
     
