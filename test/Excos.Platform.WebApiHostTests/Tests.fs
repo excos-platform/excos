@@ -22,7 +22,7 @@ module Tests =
 
     [<Fact>]
     let ``Api /counter performs increases over managed state`` () = task {
-        use! app = appTask
+        let! app = appTask
         let! httpClient = app.GetWebApiClientAsync()
         let client = CountersClient(httpClient)
         client.ReadResponseAsString <- true // for debugging
@@ -48,7 +48,7 @@ module Tests =
 
     [<Fact>]
     let ``Api /counter logs event`` () = task {
-        use! app = appTask
+        let! app = appTask
         let! httpClient = app.GetWebApiClientAsync()
         let client = CountersClient(httpClient)
         let! _ = client.IncreaseByKeyAsync("'my-counter'")
