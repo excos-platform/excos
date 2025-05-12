@@ -66,9 +66,15 @@ public class TestOtlpServer
 
 	public async Task WaitForEvents()
 	{
+		// We will wait for up to 600ms for any trace or logs to come in
 		long currentCounterValue = Interlocked.Read(ref this.updateCounter);
-		do { await Task.Delay(500); }
-		while (Interlocked.Read(ref this.updateCounter) == currentCounterValue);
+		int tries = 3;
+		do
+		{
+			await Task.Delay(200); 
+			tries--;
+		}
+		while (Interlocked.Read(ref this.updateCounter) == currentCounterValue && tries > 0);
 	}
 
 	private class TraceCaptureService(Action onUpdate) : TraceService.TraceServiceBase
