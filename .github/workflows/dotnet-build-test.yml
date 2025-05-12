@@ -27,7 +27,18 @@ jobs:
     - name: Restore dependencies
       run: dotnet restore
     - name: Build
-      run: dotnet build --no-restore
+      run: |
+        if [ "$ACTIONS_STEP_DEBUG" = "true" ]; then
+          dotnet build --no-restore /bl:msbuild.binlog
+        else
+          dotnet build --no-restore
+        fi
+    - name: Upload msbuild.binlog
+      if: env.ACTIONS_STEP_DEBUG == 'true' && always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: msbuild-binlog
+        path: msbuild.binlog
     - name: Test
       run: dotnet test --no-build --verbosity normal --logger:"junit;LogFilePath=dotnet-test-result.xml"
     - name: Test Summary
