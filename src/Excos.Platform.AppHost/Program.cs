@@ -7,6 +7,11 @@ IDistributedApplicationBuilder builder = DistributedApplication.CreateBuilder(ar
 
 IResourceBuilder<ParameterResource> postgresUserName = builder.AddParameter("dbUser");
 IResourceBuilder<ParameterResource> postgresPassword = builder.AddParameter("dbPassword", secret: true);
+
+// default if unspecified
+postgresUserName.Resource.Default = new GenerateParameterDefault { MinLength = 3 };
+postgresPassword.Resource.Default = new GenerateParameterDefault { MinLength = 8 };
+
 IResourceBuilder<PostgresServerResource> postgres = builder.AddPostgres("postgres", postgresUserName, postgresPassword, port: null);
 
 // Marten and Wolverine are having a race condition on startup to create the database schema.
