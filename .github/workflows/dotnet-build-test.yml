@@ -35,6 +35,8 @@ jobs:
       with:
         name: msbuild-binlog
         path: msbuild.binlog
+    - name: Setup dev cert
+      run: dotnet dev-certs https
     - name: Test
       run: dotnet test --no-build --verbosity normal --logger:"junit;LogFilePath=dotnet-test-result.xml"
     - name: Test Summary

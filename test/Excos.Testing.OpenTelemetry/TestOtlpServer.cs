@@ -66,7 +66,7 @@ public class TestOtlpServer
 
 	public async Task WaitForEvents()
 	{
-		// We will wait for up to 600ms for any trace or logs to come in
+		// We will wait for up to 1s for any trace or logs to come in
 		long currentCounterValue = Interlocked.Read(ref this.updateCounter);
 		int tries = 5;
 		do
