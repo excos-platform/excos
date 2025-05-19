@@ -35,10 +35,14 @@ jobs:
       with:
         name: msbuild-binlog
         path: msbuild.binlog
-    - name: Setup dev cert
-      run: dotnet tool install -g linux-dev-certs && dotnet linux-dev-certs install
     - name: Test
-      run: dotnet test --no-build --verbosity normal --logger:"junit;LogFilePath=dotnet-test-result.xml"
+      run: ./scripts/trace-watcher Excos.Platform.WebApiHost & dotnet test --no-build --verbosity normal --logger:"junit;LogFilePath=dotnet-test-result.xml"
+    - name: Upload trace
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: trace
+        path: *trace.json
     - name: Test Summary
       uses: test-summary/action@v2
       with:
