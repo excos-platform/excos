@@ -4,6 +4,8 @@
 
 PROCESS_NAME="$1"
 
+dotnet tools install --global dotnet-trace
+
 while true; do
     PID=$(dotnet-trace ps | awk -v name="$PROCESS_NAME" '$0 ~ name { print $1; exit }')
     if [[ -n "$PID" ]]; then
