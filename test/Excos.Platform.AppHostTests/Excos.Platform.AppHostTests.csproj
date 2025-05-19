@@ -31,6 +31,7 @@
 
 	<ItemGroup>
 		<!--<PackageReference Include="LimeFlight.OpenAPI.Diff" />-->
+		<ProjectReference Include="..\Excos.Testing.OpenTelemetry\Excos.Testing.OpenTelemetry.csproj" />
 		<ProjectReference Include="..\LimeFlight.OpenAPI.Diff\LimeFlight.OpenAPI.Diff.csproj" />
 	</ItemGroup>
 
