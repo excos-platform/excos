@@ -36,7 +36,7 @@ jobs:
         name: msbuild-binlog
         path: msbuild.binlog
     - name: Test
-      run: ./scripts/trace-watcher Excos.Platform.WebApiHost & dotnet test --no-build --verbosity normal --logger:"junit;LogFilePath=dotnet-test-result.xml"
+      run: ./scripts/trace-watcher.sh Excos.Platform.WebApiHost & dotnet test --no-build --verbosity normal --logger:"junit;LogFilePath=dotnet-test-result.xml"
     - name: Upload trace
       if: always()
       uses: actions/upload-artifact@v4
