@@ -71,7 +71,7 @@ public class TestOtlpServer
 		int tries = 5;
 		do
 		{
-			await Task.Delay(200); 
+			await Task.Delay(200);
 			tries--;
 		}
 		while (Interlocked.Read(ref this.updateCounter) == currentCounterValue && tries > 0);

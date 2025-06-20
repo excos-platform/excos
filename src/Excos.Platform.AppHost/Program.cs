@@ -25,7 +25,7 @@ IResourceBuilder<PostgresDatabaseResource> db = postgres
 	.WithBindMount("db-init.sql", "/docker-entrypoint-initdb.d/db-init.sql")
 	.AddDatabase(dbName);
 
-var webApiHost = builder.AddProject<Excos_Platform_WebApiHost>("WebApiHost")
+IResourceBuilder<ProjectResource> webApiHost = builder.AddProject<Excos_Platform_WebApiHost>("WebApiHost")
 	.WaitFor(postgres)
 	.WithReference(db, "postgres");
 

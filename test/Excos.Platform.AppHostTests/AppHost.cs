@@ -4,10 +4,10 @@
 using Aspire.Hosting;
 using Excos.Testing.OpenTelemetry;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Testcontainers.PostgreSql;
 
 namespace Excos.Platform.AppHostTests;
@@ -16,7 +16,7 @@ public static class AppHost
 {
 	private static readonly Lock OtlpServerLock = new Lock();
 	public static TestOtlpServer TestOtlpServer { get; private set; } = default!;
-	
+
 	private static PostgreSqlContainer? _sharedPostgresContainer;
 	private static readonly SemaphoreSlim _initSemaphore = new(1, 1);
 
@@ -60,7 +60,7 @@ public static class AppHost
 	{
 		return await app.GetHttpClientAsync();
 	}
-	
+
 	// Cleanup method for test disposal
 	public static async Task CleanupSharedResourcesAsync()
 	{
@@ -77,89 +77,61 @@ public static class AppHost
 /// </summary>
 public class FastTestDistributedApplication : IAsyncDisposable
 {
-	private readonly WebApplication _webApp;
+	private readonly WebApplicationFactory<Program> _factory;
 	private readonly HttpClient _httpClient;
 
 	public FastTestDistributedApplication()
 	{
-		var builder = WebApplication.CreateBuilder();
-		
-		// Configure like the real WebApiHost but optimized for testing
-		ConfigureForTesting(builder);
-		
-		_webApp = builder.Build();
-		
-		// Configure the pipeline like WebApiHost
-		ConfigurePipeline(_webApp);
-		
-		// Start the app
-		var startTask = _webApp.StartAsync();
-		startTask.Wait(); // Wait for startup to complete
-		
-		// Create HTTP client - get the first URL from the started app
-		var url = _webApp.Urls.FirstOrDefault();
-		if (string.IsNullOrEmpty(url))
-		{
-			// Fallback to default localhost with port 5000
-			url = "http://localhost:5000";
-		}
-		
-		_httpClient = new HttpClient()
-		{
-			BaseAddress = new Uri(url)
-		};
-	}
+		this._factory = new CustomWebApplicationFactory();
 
-	private void ConfigureForTesting(WebApplicationBuilder builder)
-	{
-		// Use the shared Postgres container connection string
-		if (AppHost.SharedPostgresContainer != null)
-		{
-			builder.Configuration.AddInMemoryCollection(new[]
-			{
-				new KeyValuePair<string, string?>("ConnectionStrings:postgres", AppHost.SharedPostgresContainer.GetConnectionString()),
-			});
-		}
-		
-		// Configure OTLP to send to test server
-		builder.Configuration.AddInMemoryCollection(new[]
-		{
-			new KeyValuePair<string, string?>("OTEL_EXPORTER_OTLP_ENDPOINT", $"https://localhost:{AppHost.TestOtlpServer.Port}"),
-			new KeyValuePair<string, string?>("OTEL_TRACES_SAMPLER", "always_on"),
-			new KeyValuePair<string, string?>("OTEL_BSP_SCHEDULE_DELAY", "500"),
-			new KeyValuePair<string, string?>("DOTNET_ENVIRONMENT", "Testing"),
-		});
-
-		// Add minimal services needed for testing
-		builder.Services.AddControllers();
-		builder.Services.AddHealthChecks();
-		
-		// Add basic OpenTelemetry if packages are available
-		// Note: This is a simplified version - the real WebApiHost has more comprehensive telemetry setup
-	}
-
-	private void ConfigurePipeline(WebApplication app)
-	{
-		// Configure pipeline similar to WebApiHost
-		app.MapGet("/", () => "Hello World!");
-		app.MapGet("/alive", () => Results.Ok("Alive"));
-		app.MapControllers();
-		app.MapHealthChecks("/health");
+		// Create the HTTP client from the factory
+		this._httpClient = this._factory.CreateClient();
 	}
 
 	public async Task<HttpClient> GetHttpClientAsync()
 	{
-		// Wait a bit for the app to be ready
-		await Task.Delay(100);
-		return _httpClient;
+		// WebApplicationFactory ensures the app is ready
+		await Task.Delay(10); // Minimal delay just to be safe
+		return this._httpClient;
 	}
 
 	public async ValueTask DisposeAsync()
 	{
-		_httpClient?.Dispose();
-		if (_webApp != null)
+		this._httpClient?.Dispose();
+		if (this._factory != null)
 		{
-			await _webApp.DisposeAsync();
+			await this._factory.DisposeAsync();
 		}
+	}
+}
+
+public class CustomWebApplicationFactory : WebApplicationFactory<Program>
+{
+	protected override void ConfigureWebHost(IWebHostBuilder builder)
+	{
+		// Set test environment
+		builder.UseEnvironment("Testing");
+
+		// Override configuration for testing
+		builder.ConfigureAppConfiguration((context, config) =>
+		{
+			// Use the shared Postgres container connection string
+			if (AppHost.SharedPostgresContainer != null)
+			{
+				config.AddInMemoryCollection(new[]
+				{
+					new KeyValuePair<string, string?>("ConnectionStrings:postgres", AppHost.SharedPostgresContainer.GetConnectionString()),
+				});
+			}
+
+			// Configure OTLP to send to test server
+			config.AddInMemoryCollection(new[]
+			{
+				new KeyValuePair<string, string?>("OTEL_EXPORTER_OTLP_ENDPOINT", $"https://localhost:{AppHost.TestOtlpServer.Port}"),
+				new KeyValuePair<string, string?>("OTEL_TRACES_SAMPLER", "always_on"),
+				new KeyValuePair<string, string?>("OTEL_BSP_SCHEDULE_DELAY", "500"),
+				new KeyValuePair<string, string?>("DOTNET_ENVIRONMENT", "Testing"),
+			});
+		});
 	}
 }
