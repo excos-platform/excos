@@ -265,3 +265,5 @@ public static class IncreaseCounterCommandHandler
 		return new CounterIncreased(command.CounterId);
 	}
 }
+
+public partial class Program { }
