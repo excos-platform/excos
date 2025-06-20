@@ -16,7 +16,7 @@ public static class OpenApiSnapshot
 
 	private static async Task<string> FetchOpenApiFileAsync(string version)
 	{
-		using DistributedApplication app = await AppHost.StartAsync();
+		await using InMemoryTestApplication app = await AppHost.StartAsync();
 		HttpClient client = await app.GetWebApiClientAsync();
 
 		HttpResponseMessage response = await client.GetAsync($"/swagger/{version}/swagger.json");

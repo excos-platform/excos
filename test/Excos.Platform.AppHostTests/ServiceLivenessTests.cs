@@ -1,8 +1,6 @@
 // Copyright (c) Marian Dziubiak.
 // Licensed under the GNU Affero General Public License v3.
 
-using Aspire.Hosting;
-
 namespace Excos.Platform.AppHostTests.Tests;
 
 public class ServiceLivenessTests
@@ -11,7 +9,7 @@ public class ServiceLivenessTests
 	public async Task GetWebResourceRootReturnsOkStatusCode()
 	{
 		// Arrange
-		await using DistributedApplication app = await AppHost.StartAsync();
+		await using InMemoryTestApplication app = await AppHost.StartAsync();
 
 		// Act
 		HttpClient httpClient = await app.GetWebApiClientAsync();
