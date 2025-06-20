@@ -23,9 +23,26 @@ jobs:
     - name: Restore dependencies
       run: dotnet restore
     - name: Build
-      run: dotnet build --no-restore
+      run: |
+        if [ "${{ runner.debug }}" = "1" ]; then
+          dotnet build --no-restore /bl:msbuild.binlog
+        else
+          dotnet build --no-restore
+        fi
+    - name: Upload msbuild.binlog
+      if: runner.debug == '1' && always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: msbuild-binlog
+        path: msbuild.binlog
     - name: Test
-      run: dotnet test --no-build --verbosity normal --logger:"junit;LogFilePath=dotnet-test-result.xml"
+      run: ./scripts/trace-watcher.sh Excos.Platform.WebApiHost & dotnet test --no-build --verbosity normal --logger:"junit;LogFilePath=dotnet-test-result.xml"
+    - name: Upload trace
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: trace
+        path: "*nettrace"
     - name: Test Summary
       uses: test-summary/action@v2
       with:

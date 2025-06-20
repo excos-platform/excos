@@ -1,134 +1,65 @@
 ﻿// Copyright (c) Marian Dziubiak.
 // Licensed under the GNU Affero General Public License v3.
 
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Configuration;
-using Testcontainers.PostgreSql;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Routing;
+using Aspire.Hosting;
+using Excos.Testing.OpenTelemetry;
 
 namespace Excos.Platform.AppHostTests;
 
-public class InMemoryTestApplication : IAsyncDisposable
-{
-	private readonly HttpClient _httpClient;
-	private readonly IServiceScope _scope;
-	private readonly PostgreSqlContainer _postgres;
-
-	private InMemoryTestApplication(HttpClient httpClient, IServiceScope scope, PostgreSqlContainer postgres)
-	{
-		_httpClient = httpClient;
-		_scope = scope;
-		_postgres = postgres;
-	}
-
-	public HttpClient HttpClient => _httpClient;
-
-	public static async Task<InMemoryTestApplication> CreateAsync()
-	{
-		// Start Postgres container
-		var postgres = new PostgreSqlBuilder()
-			.WithImage("postgres:15")
-			.WithDatabase("excos-db")
-			.WithUsername("test-user")
-			.WithPassword("test-password")
-			.WithCleanUp(true)
-			.Build();
-
-		await postgres.StartAsync();
-
-		// Create a simple in-memory web application mimicking the WebApiHost
-		var builder = WebApplication.CreateBuilder();
-		
-		// Override configuration
-		builder.Configuration.AddInMemoryCollection(new[]
-		{
-			new KeyValuePair<string, string?>("ConnectionStrings:postgres", postgres.GetConnectionString()),
-			new KeyValuePair<string, string?>("OTEL_EXPORTER_OTLP_ENDPOINT", ""), // Disable OTLP
-		});
-
-		// Add only essential services for testing
-		builder.Services.AddControllers();
-		builder.Services.AddHealthChecks();
-
-		var app = builder.Build();
-
-		// Configure simple pipeline
-		app.MapGet("/", () => "Hello World!");
-		app.MapControllers();
-		app.MapHealthChecks("/health");
-
-		await app.StartAsync();
-
-		var client = new HttpClient()
-		{
-			BaseAddress = new Uri($"http://localhost:{app.Urls.First().Split(':').Last()}")
-		};
-
-		var scope = app.Services.CreateScope();
-		return new InMemoryTestApplication(client, scope, postgres);
-	}
-
-	public async ValueTask DisposeAsync()
-	{
-		_httpClient?.Dispose();
-		_scope?.Dispose();
-		if (_postgres != null)
-		{
-			await _postgres.DisposeAsync();
-		}
-	}
-}
-
 public static class AppHost
 {
-	private static PostgreSqlContainer? _sharedPostgresContainer;
-	private static readonly SemaphoreSlim _initSemaphore = new(1, 1);
+	private static readonly Lock OtlpServerLock = new Lock();
+	public static TestOtlpServer TestOtlpServer { get; private set; } = default!;
 
-	public static async Task<InMemoryTestApplication> StartAsync()
+	public static async Task<DistributedApplication> StartAsync()
 	{
-		await _initSemaphore.WaitAsync();
-		try
+		lock (OtlpServerLock)
 		{
-			// Initialize shared Postgres container if not already done
-			if (_sharedPostgresContainer == null)
-			{
-				_sharedPostgresContainer = new PostgreSqlBuilder()
-					.WithImage("postgres:15")
-					.WithDatabase("excos-db")
-					.WithUsername("test-user")
-					.WithPassword("test-password")
-					.WithCleanUp(true)
-					.Build();
-
-				await _sharedPostgresContainer.StartAsync();
-			}
-		}
-		finally
-		{
-			_initSemaphore.Release();
+			TestOtlpServer ??= new TestOtlpServer();
 		}
 
-		return await InMemoryTestApplication.CreateAsync();
+		IDistributedApplicationTestingBuilder appHost = await DistributedApplicationTestingBuilder.CreateAsync<Projects.Excos_Platform_AppHost>([
+			"--environment=Testing"
+			]);
+
+		ConfigureOtlpExport(appHost);
+
+		appHost.Services.ConfigureHttpClientDefaults(clientBuilder =>
+		{
+			clientBuilder.AddStandardResilienceHandler();
+		});
+		// To output logs to the xUnit.net ITestOutputHelper, consider adding a package from https://www.nuget.org/packages?q=xunit+logging
+
+		DistributedApplication app = await appHost.BuildAsync();
+		await app.StartAsync();
+
+		return app;
 	}
 
-	public static async Task<HttpClient> GetWebApiClientAsync(this InMemoryTestApplication app)
+	private static void ConfigureOtlpExport(IDistributedApplicationTestingBuilder appHost)
 	{
-		// No need to wait for resource states in in-memory testing
-		// The HttpClient is already ready to use
-		await Task.CompletedTask;
-		return app.HttpClient;
+		// Configure OTLP exporter to send traces to the test OTLP server.
+		appHost.Configuration["ASPIRE_DASHBOARD_OTLP_ENDPOINT_URL"] = $"https://localhost:{TestOtlpServer.Port}";
+
+		// Set a small batch schedule delay in development.
+		// This reduces the delay that OTLP exporter waits to sends telemetry and reduces the need to wait in tests.
+		const string value = "500"; // milliseconds
+		appHost.Configuration["OTEL_BLRP_SCHEDULE_DELAY"] = value;
+		appHost.Configuration["OTEL_BSP_SCHEDULE_DELAY"] = value;
+		appHost.Configuration["OTEL_METRIC_EXPORT_INTERVAL"] = value;
+
+		// Configure trace sampler to send all traces to the server.
+		appHost.Configuration["OTEL_TRACES_SAMPLER"] = "always_on";
+		// Configure metrics to include exemplars.
+		appHost.Configuration["OTEL_METRICS_EXEMPLAR_FILTER"] = "trace_based";
 	}
 
-	// Cleanup method for test disposal
-	public static async Task CleanupSharedResourcesAsync()
+	public static async Task<HttpClient> GetWebApiClientAsync(this DistributedApplication app)
 	{
-		if (_sharedPostgresContainer != null)
-		{
-			await _sharedPostgresContainer.DisposeAsync();
-			_sharedPostgresContainer = null;
-		}
+		ResourceNotificationService resourceNotificationService = app.Services.GetRequiredService<ResourceNotificationService>();
+		await resourceNotificationService.WaitForResourceAsync("WebApiHost", KnownResourceStates.Running).WaitAsync(TimeSpan.FromSeconds(30));
+
+		HttpClient httpClient = app.CreateHttpClient("WebApiHost");
+		return httpClient;
 	}
 }

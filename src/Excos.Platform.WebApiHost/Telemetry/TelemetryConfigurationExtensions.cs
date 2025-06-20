@@ -42,10 +42,16 @@ public static class TelemetryConfigurationExtensions
 
 	private static IHostApplicationBuilder AddOpenTelemetryExporters(this IHostApplicationBuilder builder)
 	{
+		using var loggerFactory = LoggerFactory.Create(builder => builder.AddConsole());
+		var logger = loggerFactory.CreateLogger(nameof(TelemetryConfigurationExtensions));
+		
 		bool useOtlpExporter = !string.IsNullOrWhiteSpace(builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"]);
 
 		if (useOtlpExporter)
 		{
+			logger.LogInformation("Using OTLP exporter with endpoint {otlpEndpoint} and protocol {protocol}",
+				builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"],
+				builder.Configuration["OTEL_EXPORTER_OTLP_PROTOCOL"]);
 			builder.Services.AddOpenTelemetry().UseOtlpExporter();
 		}
 
