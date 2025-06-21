@@ -3,7 +3,9 @@
 
 using Aspire.Hosting;
 using Excos.Testing.OpenTelemetry;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -82,7 +84,7 @@ public class FastTestDistributedApplication : IAsyncDisposable
 
 	public FastTestDistributedApplication()
 	{
-		this._factory = new CustomWebApplicationFactory();
+		this._factory = new TestWebApplicationFactory();
 
 		// Create the HTTP client from the factory
 		this._httpClient = this._factory.CreateClient();
@@ -105,33 +107,31 @@ public class FastTestDistributedApplication : IAsyncDisposable
 	}
 }
 
-public class CustomWebApplicationFactory : WebApplicationFactory<Program>
+public class TestWebApplicationFactory : WebApplicationFactory<Program>
 {
 	protected override void ConfigureWebHost(IWebHostBuilder builder)
 	{
-		// Set test environment
 		builder.UseEnvironment("Testing");
-
-		// Override configuration for testing
+		
 		builder.ConfigureAppConfiguration((context, config) =>
 		{
-			// Use the shared Postgres container connection string
-			if (AppHost.SharedPostgresContainer != null)
+			config.AddInMemoryCollection(new Dictionary<string, string?>
 			{
-				config.AddInMemoryCollection(new[]
-				{
-					new KeyValuePair<string, string?>("ConnectionStrings:postgres", AppHost.SharedPostgresContainer.GetConnectionString()),
-				});
-			}
-
-			// Configure OTLP to send to test server
-			config.AddInMemoryCollection(new[]
-			{
-				new KeyValuePair<string, string?>("OTEL_EXPORTER_OTLP_ENDPOINT", $"https://localhost:{AppHost.TestOtlpServer.Port}"),
-				new KeyValuePair<string, string?>("OTEL_TRACES_SAMPLER", "always_on"),
-				new KeyValuePair<string, string?>("OTEL_BSP_SCHEDULE_DELAY", "500"),
-				new KeyValuePair<string, string?>("DOTNET_ENVIRONMENT", "Testing"),
+				["ConnectionStrings:postgres"] = AppHost.SharedPostgresContainer?.GetConnectionString() ?? "Host=localhost;Database=test;Username=test;Password=test",
+				["OTEL_EXPORTER_OTLP_ENDPOINT"] = $"https://localhost:{AppHost.TestOtlpServer.Port}",
+				["OTEL_TRACES_SAMPLER"] = "always_on",
+				["OTEL_BSP_SCHEDULE_DELAY"] = "500",
+				["DOTNET_ENVIRONMENT"] = "Testing",
+				["ASPNETCORE_ENVIRONMENT"] = "Testing",
+				["ASPIRE_ALLOW_UNSECURED_TRANSPORT"] = "true",
 			});
+		});
+
+		builder.ConfigureServices(services =>
+		{
+			// Override to use in-memory database for testing if needed
+			// services.RemoveAll(typeof(DbContextOptions<>));
+			// services.AddDbContext<>(...) - if using EF Core
 		});
 	}
 }
