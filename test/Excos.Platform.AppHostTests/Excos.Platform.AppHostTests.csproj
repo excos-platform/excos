@@ -24,18 +24,23 @@
 		<PackageReference Include="Aspire.Hosting.Testing" />
 		<PackageReference Include="coverlet.collector" />
 		<PackageReference Include="JunitXml.TestLogger" />
+		<PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
 		<PackageReference Include="Microsoft.NET.Test.Sdk" />
+		<PackageReference Include="OpenTelemetry.Exporter.InMemory" />
+		<PackageReference Include="Testcontainers.PostgreSql" />
 		<PackageReference Include="xunit" />
 		<PackageReference Include="xunit.runner.visualstudio" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<!--<PackageReference Include="LimeFlight.OpenAPI.Diff" />-->
+		<ProjectReference Include="..\Excos.Testing.OpenTelemetry\Excos.Testing.OpenTelemetry.csproj" />
 		<ProjectReference Include="..\LimeFlight.OpenAPI.Diff\LimeFlight.OpenAPI.Diff.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<ProjectReference Include="..\..\src\Excos.Platform.AppHost\Excos.Platform.AppHost.csproj" />
+		<ProjectReference Include="..\..\src\Excos.Platform.WebApiHost\Excos.Platform.WebApiHost.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>
