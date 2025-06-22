@@ -79,7 +79,7 @@ public static class AppHost
 /// </summary>
 public class FastTestDistributedApplication : IAsyncDisposable
 {
-	private readonly WebApplicationFactory<Program> _factory;
+	private readonly WebApplicationFactory<TestProgram> _factory;
 	private readonly HttpClient _httpClient;
 
 	public FastTestDistributedApplication()
@@ -107,7 +107,26 @@ public class FastTestDistributedApplication : IAsyncDisposable
 	}
 }
 
-public class TestWebApplicationFactory : WebApplicationFactory<Program>
+// Test-specific program class that reuses the production configuration
+public class TestProgram
+{
+	public static void Main(string[] args)
+	{
+		var builder = WebApplication.CreateBuilder(args);
+		
+		// Use the same configuration methods as production
+		global::Program.ConfigureServices(builder);
+		
+		var app = builder.Build();
+		
+		// Use the same middleware configuration as production
+		global::Program.ConfigureMiddleware(app);
+		
+		app.Run();
+	}
+}
+
+public class TestWebApplicationFactory : WebApplicationFactory<TestProgram>
 {
 	protected override void ConfigureWebHost(IWebHostBuilder builder)
 	{
@@ -125,13 +144,6 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>
 				["ASPNETCORE_ENVIRONMENT"] = "Testing",
 				["ASPIRE_ALLOW_UNSECURED_TRANSPORT"] = "true",
 			});
-		});
-
-		builder.ConfigureServices(services =>
-		{
-			// Override to use in-memory database for testing if needed
-			// services.RemoveAll(typeof(DbContextOptions<>));
-			// services.AddDbContext<>(...) - if using EF Core
 		});
 	}
 }
