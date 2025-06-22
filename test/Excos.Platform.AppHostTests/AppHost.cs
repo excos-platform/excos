@@ -79,7 +79,7 @@ public static class AppHost
 /// </summary>
 public class FastTestDistributedApplication : IAsyncDisposable
 {
-	private readonly WebApplicationFactory<TestProgram> _factory;
+	private readonly WebApplicationFactory<global::Program> _factory;
 	private readonly HttpClient _httpClient;
 
 	public FastTestDistributedApplication()
@@ -107,31 +107,12 @@ public class FastTestDistributedApplication : IAsyncDisposable
 	}
 }
 
-// Test-specific program class that reuses the production configuration
-public class TestProgram
-{
-	public static void Main(string[] args)
-	{
-		var builder = WebApplication.CreateBuilder(args);
-		
-		// Use the same configuration methods as production
-		global::Program.ConfigureServices(builder);
-		
-		var app = builder.Build();
-		
-		// Use the same middleware configuration as production
-		global::Program.ConfigureMiddleware(app);
-		
-		app.Run();
-	}
-}
-
-public class TestWebApplicationFactory : WebApplicationFactory<TestProgram>
+public class TestWebApplicationFactory : WebApplicationFactory<global::Program>
 {
 	protected override void ConfigureWebHost(IWebHostBuilder builder)
 	{
 		builder.UseEnvironment("Testing");
-		
+
 		builder.ConfigureAppConfiguration((context, config) =>
 		{
 			config.AddInMemoryCollection(new Dictionary<string, string?>
@@ -144,6 +125,13 @@ public class TestWebApplicationFactory : WebApplicationFactory<TestProgram>
 				["ASPNETCORE_ENVIRONMENT"] = "Testing",
 				["ASPIRE_ALLOW_UNSECURED_TRANSPORT"] = "true",
 			});
+		});
+
+		// Override service configuration to use our shared test infrastructure
+		builder.ConfigureServices(services =>
+		{
+			// WebApplicationFactory will automatically call ProgramConfiguration.ConfigureServices
+			// but we can override specific services here if needed for testing
 		});
 	}
 }
