@@ -2,6 +2,7 @@
 // Licensed under the GNU Affero General Public License v3.
 
 using Asp.Versioning;
+using Excos.Platform.ApiClient.V1;
 using Excos.Platform.Common.Privacy;
 using Marten;
 using Microsoft.AspNetCore.Mvc;
@@ -27,7 +28,7 @@ public class CountersController : ODataController
 
 	[HttpGet]
 	[EnableQuery]
-	[ProducesResponseType(typeof(IEnumerable<Counter>), StatusCodes.Status200OK)]
+	[ProducesResponseType(typeof(ODataValueOfIEnumerableOfCounter), StatusCodes.Status200OK)]
 	public IActionResult Get()
 	{
 		IDocumentSession session = this.store.LightweightSession("DEFAULT");
@@ -38,7 +39,7 @@ public class CountersController : ODataController
 	[HttpGet]
 	[EnableQuery]
 	[ProducesResponseType(typeof(Counter), StatusCodes.Status200OK)]
-	[ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+	[ProducesResponseType(typeof(Microsoft.AspNetCore.Mvc.ProblemDetails), StatusCodes.Status404NotFound)]
 	public async Task<IActionResult> Get(string key)
 	{
 		IDocumentSession session = this.store.LightweightSession("DEFAULT");
@@ -51,7 +52,7 @@ public class CountersController : ODataController
 	}
 
 	[HttpPost]
-	[ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
+	[ProducesResponseType(typeof(ODataValueOfString), StatusCodes.Status200OK)]
 	public async Task<IActionResult> Increase(string key)
 	{
 		await this.messageBus.InvokeForTenantAsync("DEFAULT", new IncreaseCounterCommand(key));

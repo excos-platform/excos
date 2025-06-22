@@ -23,6 +23,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<ProjectReference Include="..\Excos.Platform.ApiClient\Excos.Platform.ApiClient.csproj" />
 		<ProjectReference Include="..\Excos.Platform.Common\Excos.Platform.Common.csproj" />
 	</ItemGroup>
 
