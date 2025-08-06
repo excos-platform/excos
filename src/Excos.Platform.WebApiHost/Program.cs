@@ -8,9 +8,11 @@ using Excos.Platform.Common.Wolverine.Telemetry;
 using Excos.Platform.WebApiHost.Healthchecks;
 using Excos.Platform.WebApiHost.OpenApi;
 using Excos.Platform.WebApiHost.Telemetry;
+using JasperFx;
+using JasperFx.Events;
+using JasperFx.Events.Daemon;
 using Marten;
 using Marten.Events;
-using Marten.Events.Daemon.Resiliency;
 using Marten.Events.Projections;
 using Marten.Services;
 using Marten.Storage;
@@ -165,7 +167,7 @@ try
 	// Oakton logs exception to console and does not rethrow it.
 	if (app.Environment.IsDevelopment())
 	{
-		return await app.RunOaktonCommands(args);
+		return await app.RunJasperFxCommands(args);
 	}
 
 	await app.RunAsync();
