@@ -9,7 +9,7 @@
 		<PackageVersion Include="Aspire.Hosting.PostgreSQL" Version="9.4.0" />
 		<PackageVersion Include="Microsoft.AspNetCore.OData" Version="9.3.2" />
 		<PackageVersion Include="Microsoft.Extensions.Compliance.Redaction" Version="9.7.0" />
-		<PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.7" />
+		<PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.8" />
 		<PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="9.7.0" />
 		<PackageVersion Include="Microsoft.Extensions.ServiceDiscovery" Version="9.4.0" />
 		<PackageVersion Include="NSwag.AspNetCore" Version="14.5.0" />
@@ -19,13 +19,13 @@
 		<PackageVersion Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.12.0" />
 		<PackageVersion Include="OpenTelemetry.Instrumentation.Http" Version="1.12.0" />
 		<PackageVersion Include="OpenTelemetry.Instrumentation.Runtime" Version="1.12.0" />
-		<PackageVersion Include="WolverineFx" Version="4.8.0" />
-		<PackageVersion Include="WolverineFx.Marten" Version="4.8.0" />
+		<PackageVersion Include="WolverineFx" Version="4.9.1" />
+		<PackageVersion Include="WolverineFx.Marten" Version="4.9.1" />
 	</ItemGroup>
 	<ItemGroup Label="Testing">
 		<PackageVersion Include="Aspire.Hosting.Testing" Version="9.4.0" />
 		<PackageVersion Include="coverlet.collector" Version="6.0.4" />
-		<PackageVersion Include="FSharp.Core" Version="9.0.300" />
+		<PackageVersion Include="FSharp.Core" Version="9.0.303" />
 		<PackageVersion Include="JunitXml.TestLogger" Version="6.1.0" />
 		<PackageVersion Include="LimeFlight.OpenAPI.Diff" Version="3.0.10-preview.8" />
 		<PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
