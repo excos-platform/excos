@@ -1,8 +1,8 @@
 name: Publish .NET Service
 
 on:
-  push:
-    branches: [ "main" ]
+  #push:
+  #  branches: [ "main" ]
   workflow_dispatch: # allow running by manual trigger
 
 concurrency:
