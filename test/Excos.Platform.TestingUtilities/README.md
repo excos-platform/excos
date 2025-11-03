@@ -133,10 +133,11 @@ module MyTests =
    - **Primitive types** (int, string, bool, DateTime, etc.) are filled from the inline data passed to the attribute constructor
    - **Complex types** (interfaces, classes) are resolved from the DI container
 
-2. **Service Scopes**: Each test execution creates a new service scope, ensuring:
-   - Scoped services are unique per test
-   - Proper disposal of disposable services
-   - Test isolation
+2. **Service Lifetime and Isolation**: 
+   - Services are resolved from the root service provider
+   - For test isolation, **register services as Transient** rather than Singleton or Scoped
+   - Each test will get a new instance of Transient services
+   - Singleton services are shared across all tests (use for read-only, immutable services only)
 
 3. **Parameter Order**: Primitive parameters should appear first, followed by injected services:
    ```csharp
@@ -170,5 +171,12 @@ The following types are considered "primitive" and will be sourced from inline d
 1. **Set up the service provider once** per test collection using a fixture
 2. **Order parameters** with primitives first, then injected services
 3. **Keep primitive data simple** - use inline data for test case variations
-4. **Use scoped or transient services** when tests need isolation
-5. **Dispose properly** - the attribute handles scope disposal, but ensure your fixture disposes the root provider if needed
+4. **Use Transient services for isolation** - register services with `AddTransient` to get new instances per test
+5. **Thread-safety** - call `SetServiceProvider` once during assembly initialization before parallel tests run
+6. **Dispose properly** - ensure your fixture disposes the root provider when the test collection completes
+
+### Important Notes
+
+- **Service Lifetime**: Services are resolved from the root provider, not from scoped contexts. Use Transient lifetime for test isolation.
+- **Thread Safety**: The service provider is stored in a static field. For best results, set it once during test assembly initialization.
+- **No Automatic Scoping**: Unlike ASP.NET Core request scopes, each test does not automatically get its own scope. Register services as Transient for per-test instances.

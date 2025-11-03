@@ -13,20 +13,27 @@ namespace Excos.Platform.TestingUtilities;
 /// 1. Dependencies injected from a DI container (complex types)
 /// 2. Primitive values provided inline via the attribute constructor
 /// 
-/// Each test execution creates a new service scope to ensure isolation.
-/// Display names show only primitive parameters, not injected dependencies.
+/// Services are resolved from the root service provider. For test isolation,
+/// register services as Transient rather than Singleton or Scoped.
+/// 
+/// Thread-safety: The global service provider should be set once during test assembly
+/// initialization before any tests run to avoid race conditions.
 /// </remarks>
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
 public class InjectFromServicesDataAttribute : DataAttribute
 {
-    private static IServiceProvider? _globalServiceProvider;
+    private static volatile IServiceProvider? _globalServiceProvider;
     private readonly object?[] _inlineData;
 
     /// <summary>
     /// Sets the global service provider used for dependency injection in tests.
-    /// This should be called once during test initialization.
+    /// This should be called once during test initialization before any tests run.
     /// </summary>
     /// <param name="serviceProvider">The service provider to use for DI</param>
+    /// <remarks>
+    /// For thread-safety, call this method once during test assembly initialization
+    /// before parallel test execution begins.
+    /// </remarks>
     public static void SetServiceProvider(IServiceProvider serviceProvider)
     {
         _globalServiceProvider = serviceProvider;
@@ -58,10 +65,6 @@ public class InjectFromServicesDataAttribute : DataAttribute
 
         var parameters = testMethod.GetParameters();
         var values = new object?[parameters.Length];
-        
-        // Create a new scope for this test execution
-        using var scope = _globalServiceProvider.CreateScope();
-        var scopedProvider = scope.ServiceProvider;
 
         int inlineDataIndex = 0;
 
@@ -78,7 +81,9 @@ public class InjectFromServicesDataAttribute : DataAttribute
             else
             {
                 // Try to resolve from DI container
-                var dependency = scopedProvider.GetService(parameterType);
+                // Note: Services are resolved from the root provider. For test isolation,
+                // register services as Transient rather than Singleton/Scoped.
+                var dependency = _globalServiceProvider.GetService(parameterType);
                 if (dependency == null)
                 {
                     throw new InvalidOperationException(
