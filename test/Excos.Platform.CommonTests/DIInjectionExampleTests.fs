@@ -28,10 +28,10 @@ type LoggerService() =
 type DITestFixture() =
     do
         let services = ServiceCollection()
-        services.AddSingleton<ICalculatorService, CalculatorService>() |> ignore
+        services.AddTransient<ICalculatorService, CalculatorService>() |> ignore
         services.AddTransient<ILoggerService, LoggerService>() |> ignore
         let provider = services.BuildServiceProvider()
-        InjectFromServicesDataAttribute.SetServiceProvider(provider)
+        InjectDataAttribute.SetServiceProvider(provider)
 
     interface IDisposable with
         member _.Dispose() = ()
@@ -44,27 +44,38 @@ type DICollectionFixture() =
 [<Collection("DI Injection Tests")>]
 module DIInjectionExampleTests =
 
-    // Example test using DI injection only
+    // Example test using DI injection only (new style)
     [<Theory>]
-    [<InjectFromServicesData>]
+    [<InjectData>]
     let ``Calculator service can add numbers`` (calculator: ICalculatorService) =
         let result = calculator.Add 5 3
         Assert.Equal(8, result)
 
-    // Example test using both DI injection and inline primitive data
+    // Example test with multiple test cases using InjectInline (new style)
     [<Theory>]
-    [<InjectFromServicesData(10, 5)>]
-    let ``Calculator service operations with inline data`` (x: int) (y: int) (calculator: ICalculatorService) =
+    [<InjectData>]
+    [<InjectInline(10, 5)>]
+    [<InjectInline(20, 10)>]
+    [<InjectInline(7, 3)>]
+    let ``Calculator service operations with multiple inline variants`` (x: int) (y: int) (calculator: ICalculatorService) =
         let sum = calculator.Add x y
         let product = calculator.Multiply x y
-        Assert.Equal(15, sum)
-        Assert.Equal(50, product)
+        Assert.Equal(x + y, sum)
+        Assert.Equal(x * y, product)
 
-    // Example test with multiple injected services and primitive data
+    // Example test with multiple injected services and inline data (new style)
     [<Theory>]
-    [<InjectFromServicesData("test operation")>]
-    let ``Multiple services with inline message`` (message: string) (calculator: ICalculatorService) (logger: ILoggerService) =
+    [<InjectData>]
+    [<InjectInline("test operation")>]
+    [<InjectInline("another test")>]
+    let ``Multiple services with inline message variants`` (message: string) (calculator: ICalculatorService) (logger: ILoggerService) =
         logger.Log(message)
         let result = calculator.Add 2 3
         Assert.Equal(5, result)
-        // Note: In a real test, you'd need a way to verify the log was called
+
+    // Legacy test using old attribute (for backward compatibility testing)
+    [<Theory>]
+    [<InjectFromServicesData(100, 50)>]
+    let ``Legacy attribute still works`` (x: int) (y: int) (calculator: ICalculatorService) =
+        let sum = calculator.Add x y
+        Assert.Equal(150, sum)

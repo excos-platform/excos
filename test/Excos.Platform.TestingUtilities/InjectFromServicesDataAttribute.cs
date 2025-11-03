@@ -1,71 +1,90 @@
-using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
-using Xunit.Sdk;
 
 namespace Excos.Platform.TestingUtilities;
 
 /// <summary>
-/// Custom xUnit DataAttribute that supports dependency injection from a service provider
-/// with optional primitive inline data.
+/// Legacy attribute for backward compatibility. Use <see cref="InjectDataAttribute"/> 
+/// with <see cref="InjectInlineAttribute"/> instead.
 /// </summary>
 /// <remarks>
-/// This attribute enables test methods to receive both:
-/// 1. Dependencies injected from a DI container (complex types)
-/// 2. Primitive values provided inline via the attribute constructor
-/// 
-/// Services are resolved from the root service provider. For test isolation,
-/// register services as Transient rather than Singleton or Scoped.
-/// 
-/// Thread-safety: The global service provider should be set once during test assembly
-/// initialization before any tests run to avoid race conditions.
+/// This attribute is maintained for backward compatibility with existing tests.
+/// New tests should use [InjectData] with [InjectInline(a, b, c)] for better support
+/// of multiple test case variants.
 /// </remarks>
+[Obsolete("Use InjectDataAttribute with InjectInlineAttribute instead for better multi-case support.")]
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
-public class InjectFromServicesDataAttribute : DataAttribute
+public class InjectFromServicesDataAttribute : InjectDataAttribute
 {
-    private static volatile IServiceProvider? _globalServiceProvider;
-    private readonly object?[] _inlineData;
-
     /// <summary>
     /// Sets the global service provider used for dependency injection in tests.
-    /// This should be called once during test initialization before any tests run.
     /// </summary>
     /// <param name="serviceProvider">The service provider to use for DI</param>
-    /// <remarks>
-    /// For thread-safety, call this method once during test assembly initialization
-    /// before parallel test execution begins.
-    /// </remarks>
-    public static void SetServiceProvider(IServiceProvider serviceProvider)
+    public new static void SetServiceProvider(IServiceProvider serviceProvider)
     {
-        _globalServiceProvider = serviceProvider;
+        InjectDataAttribute.SetServiceProvider(serviceProvider);
     }
-
-    /// <summary>
-    /// Gets the global service provider (for testing purposes)
-    /// </summary>
-    internal static IServiceProvider? GetServiceProvider() => _globalServiceProvider;
 
     /// <summary>
     /// Initializes a new instance of the attribute with optional inline primitive data.
     /// </summary>
     /// <param name="data">Primitive values to be passed to corresponding test parameters</param>
+    /// <remarks>
+    /// This constructor is maintained for backward compatibility. For new tests,
+    /// use [InjectData] with [InjectInline(a, b, c)] instead.
+    /// </remarks>
     public InjectFromServicesDataAttribute(params object?[] data)
     {
-        _inlineData = data ?? Array.Empty<object?>();
+        // For backward compatibility, if inline data is provided,
+        // we'll apply it as a single InjectInline attribute would
+        if (data != null && data.Length > 0)
+        {
+            // Store data to be used in GetData
+            _legacyInlineData = data;
+        }
     }
 
+    private readonly object?[]? _legacyInlineData;
+
     /// <inheritdoc/>
-    public override IEnumerable<object?[]> GetData(MethodInfo testMethod)
+    public override IEnumerable<object?[]> GetData(System.Reflection.MethodInfo testMethod)
     {
-        if (_globalServiceProvider == null)
+        // If legacy inline data was provided in constructor, use it
+        if (_legacyInlineData != null && _legacyInlineData.Length > 0)
+        {
+            // Temporarily inject as if there was an InjectInline attribute
+            yield return ResolveParametersLegacy(testMethod, _legacyInlineData);
+        }
+        else
+        {
+            // Use base implementation
+            foreach (var data in base.GetData(testMethod))
+            {
+                yield return data;
+            }
+        }
+    }
+
+    private object?[] ResolveParametersLegacy(System.Reflection.MethodInfo testMethod, object?[] inlineData)
+    {
+        var provider = GetServiceProvider();
+        if (provider == null)
         {
             throw new InvalidOperationException(
                 "GlobalServiceProvider not set. Call InjectFromServicesDataAttribute.SetServiceProvider() " +
                 "during test initialization.");
         }
 
+        using var scope = provider.CreateScope();
+        var scopedProvider = scope.ServiceProvider;
+
+        var methodContainer = scopedProvider.GetService<ITestMethodContainer>();
+        if (methodContainer != null)
+        {
+            methodContainer.Method = testMethod;
+        }
+
         var parameters = testMethod.GetParameters();
         var values = new object?[parameters.Length];
-
         int inlineDataIndex = 0;
 
         for (int i = 0; i < parameters.Length; i++)
@@ -73,17 +92,13 @@ public class InjectFromServicesDataAttribute : DataAttribute
             var parameter = parameters[i];
             var parameterType = parameter.ParameterType;
 
-            // Check if this is a primitive or simple type that should use inline data
-            if (IsPrimitiveOrSimpleType(parameterType) && inlineDataIndex < _inlineData.Length)
+            if (IsPrimitiveOrSimpleType(parameterType) && inlineDataIndex < inlineData.Length)
             {
-                values[i] = _inlineData[inlineDataIndex++];
+                values[i] = inlineData[inlineDataIndex++];
             }
             else
             {
-                // Try to resolve from DI container
-                // Note: Services are resolved from the root provider. For test isolation,
-                // register services as Transient rather than Singleton/Scoped.
-                var dependency = _globalServiceProvider.GetService(parameterType);
+                var dependency = scopedProvider.GetService(parameterType);
                 if (dependency == null)
                 {
                     throw new InvalidOperationException(
@@ -95,12 +110,9 @@ public class InjectFromServicesDataAttribute : DataAttribute
             }
         }
 
-        yield return values;
+        return values;
     }
 
-    /// <summary>
-    /// Determines if a type is considered primitive or simple for the purpose of inline data.
-    /// </summary>
     private static bool IsPrimitiveOrSimpleType(Type type)
     {
         return type.IsPrimitive
