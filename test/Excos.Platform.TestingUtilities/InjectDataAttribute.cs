@@ -98,7 +98,18 @@ public class InjectDataAttribute : DataAttribute
             // Check if this is a primitive or simple type that should use inline data
             if (IsPrimitiveOrSimpleType(parameterType) && inlineDataIndex < inlineData.Length)
             {
-                values[i] = inlineData[inlineDataIndex++];
+                var inlineValue = inlineData[inlineDataIndex++];
+                
+                // Validate that the inline data type matches the parameter type
+                if (inlineValue != null && !parameterType.IsAssignableFrom(inlineValue.GetType()))
+                {
+                    throw new InvalidOperationException(
+                        $"Inline data type mismatch for parameter '{parameter.Name}' at index {inlineDataIndex - 1}. " +
+                        $"Expected type '{parameterType.FullName}', but got '{inlineValue.GetType().FullName}'. " +
+                        $"Test method: '{testMethod.Name}'.");
+                }
+                
+                values[i] = inlineValue;
             }
             else
             {
