@@ -19,6 +19,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LimeFlight.OpenAPI.Diff", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Excos.Platform.ApiClient", "src\Excos.Platform.ApiClient\Excos.Platform.ApiClient.csproj", "{BF123D94-EEFA-4B55-A991-12560E1F43CD}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{48C1D164-6831-44A2-950A-E5E13D5E7C03}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Excos.Platform.TestingUtilities", "test\Excos.Platform.TestingUtilities\Excos.Platform.TestingUtilities.csproj", "{D2FE3353-9329-48AC-801C-84D537D4590A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -57,11 +61,18 @@ Global
 		{BF123D94-EEFA-4B55-A991-12560E1F43CD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BF123D94-EEFA-4B55-A991-12560E1F43CD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BF123D94-EEFA-4B55-A991-12560E1F43CD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D2FE3353-9329-48AC-801C-84D537D4590A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D2FE3353-9329-48AC-801C-84D537D4590A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D2FE3353-9329-48AC-801C-84D537D4590A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D2FE3353-9329-48AC-801C-84D537D4590A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {86BCFD98-DEB5-41A4-8184-C32B44BD992B}
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{D2FE3353-9329-48AC-801C-84D537D4590A} = {48C1D164-6831-44A2-950A-E5E13D5E7C03}
 	EndGlobalSection
 EndGlobal

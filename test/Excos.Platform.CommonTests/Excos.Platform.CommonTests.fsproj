@@ -8,6 +8,7 @@
 
 	<ItemGroup>
 		<Compile Include="PrivacyRedactionTests.fs" />
+		<Compile Include="DIInjectionExampleTests.fs" />
 		<Compile Include="Program.fs" />
 	</ItemGroup>
 
@@ -22,6 +23,11 @@
 
 	<ItemGroup>
 	  <ProjectReference Include="..\..\src\Excos.Platform.Common\Excos.Platform.Common.csproj" />
+	  <ProjectReference Include="..\Excos.Platform.TestingUtilities\Excos.Platform.TestingUtilities.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
 	</ItemGroup>
 
 </Project>
