@@ -9,6 +9,7 @@
 	  <PackageReference Include="NSwag.MSBuild">
 	    <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 	    <PrivateAssets>all</PrivateAssets>
+	    <Version>14.6.3</Version>
 	  </PackageReference>
 	</ItemGroup>
 
